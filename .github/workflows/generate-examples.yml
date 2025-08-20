@@ -10,6 +10,9 @@ on:
 jobs:
   generate-examples:
     runs-on: ubuntu-latest
+    env:
+      RUST_FONTCONFIG_DLOPEN: "1"
+      FONTCONFIG_NO_PKG_CONFIG: "1"
     
     steps:
     - name: Checkout code
@@ -20,6 +23,11 @@ jobs:
       with:
         toolchain: stable
         override: true
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libfontconfig1-dev pkg-config
         
     - name: Cache Rust dependencies
       uses: actions/cache@v3
