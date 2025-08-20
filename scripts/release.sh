@@ -170,16 +170,10 @@ build_release() {
     print_success "Release build successful!"
 }
 
-# Function to run cargo dist
+# Function to run cargo dist (removed - not needed for tag-based releases)
 run_cargo_dist() {
-    print_status "Running cargo dist..."
-    
-    if ! cargo dist build --release; then
-        print_error "Cargo dist build failed!"
-        exit 1
-    fi
-    
-    print_success "Cargo dist build successful!"
+    print_status "Skipping cargo dist - releases are triggered by tags"
+    print_success "Cargo dist will be handled by GitHub Actions on tag push"
 }
 
 # Function to create git tag
@@ -235,7 +229,7 @@ show_usage() {
     echo "  --skip-tests     Skip running tests"
     echo "  --skip-lints     Skip running lints"
     echo "  --skip-build     Skip building release"
-    echo "  --skip-dist      Skip cargo dist build"
+    echo "  --skip-dist      Skip cargo dist build (deprecated - dist not run by default)"
     echo "  --dry-run        Show what would be done without making changes"
     echo "  --help           Show this help message"
     echo ""
@@ -284,6 +278,7 @@ check_prerequisites() {
     fi
     
     print_success "All prerequisites met!"
+    print_status "Note: cargo-dist releases are handled automatically by GitHub Actions when tags are pushed"
 }
 
 # Main script
@@ -387,12 +382,12 @@ main() {
             echo "5. Build release"
         fi
         if [[ "$skip_dist" == false ]]; then
-            echo "6. Run cargo dist build"
+            echo "6. Skip cargo dist (handled by GitHub Actions)"
         fi
         echo "7. Update version to $version"
         echo "8. Commit changes"
         echo "9. Create tag v$version"
-        echo "10. Push to GitHub"
+        echo "10. Push to GitHub (triggers cargo dist release)"
         exit 0
     fi
     

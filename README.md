@@ -103,12 +103,11 @@ For complex workflows, use YAML/JSON spec files to define multiple charts:
 ### Prerequisites
 
 ```bash
-# Install cargo-dist for releases
-cargo install cargo-dist
-
 # Install development dependencies
 cargo install cargo-watch  # For development
 cargo install cargo-audit  # For security checks
+
+# Note: cargo-dist not needed locally - handled by GitHub Actions
 ```
 
 ### Development Workflow
@@ -153,7 +152,7 @@ The release script will:
 3. ✅ Build the release version
 4. ✅ Update version in Cargo.toml
 5. ✅ Create git tag and push to GitHub
-6. ✅ Trigger cargo dist for distribution
+6. ✅ Trigger cargo dist automatically via GitHub Actions
 
 For detailed release instructions, see [docs/release-guide.md](docs/release-guide.md).
 

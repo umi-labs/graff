@@ -7,12 +7,12 @@ This guide explains how to use the release automation system for Graff.
 Before you can release, make sure you have the following installed:
 
 ```bash
-# Install cargo-dist
-cargo install cargo-dist
-
-# Verify installation
-cargo dist --version
+# Basic requirements (cargo-dist not needed locally)
+cargo --version
+git --version
 ```
+
+**Note:** cargo-dist is not required locally as releases are handled automatically by GitHub Actions when you push tags.
 
 ## Quick Release
 
@@ -37,11 +37,10 @@ This will:
 2. ✅ Run all tests
 3. ✅ Check code formatting and lints
 4. ✅ Build the release version
-5. ✅ Run cargo dist build
-6. ✅ Update version in Cargo.toml
-7. ✅ Commit the version change
-8. ✅ Create a git tag
-9. ✅ Push everything to GitHub
+5. ✅ Update version in Cargo.toml
+6. ✅ Commit the version change
+7. ✅ Create a git tag
+8. ✅ Push everything to GitHub (triggers cargo dist release automatically)
 
 ## Advanced Usage
 
@@ -67,7 +66,7 @@ You can skip certain steps if needed:
 # Skip build
 ./scripts/release.sh --major --skip-build
 
-# Skip cargo dist build
+# Skip cargo dist build (deprecated - not needed)
 ./scripts/release.sh --patch --skip-dist
 
 # Skip multiple steps

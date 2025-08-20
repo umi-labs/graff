@@ -86,7 +86,7 @@ Comprehensive release automation script for cargo dist integration.
 - `--skip-tests`: Skip running tests
 - `--skip-lints`: Skip running lints
 - `--skip-build`: Skip building release
-- `--skip-dist`: Skip cargo dist build
+- `--skip-dist`: Skip cargo dist build (deprecated - not needed)
 - `--dry-run`: Show what would be done without making changes
 - `--help`: Show help message
 
