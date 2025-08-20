@@ -99,6 +99,47 @@ graff bar --input events.csv --x week --y eventCount --group eventName --stacked
 graff bar --input channels.csv --x channel --y sessions --horizontal --title "Sessions by Channel"
 ```
 
+### `graff bar-stacked`
+
+Generate stacked bar charts for composition analysis.
+
+```bash
+graff bar-stacked [OPTIONS] --input <FILE> --x <COLUMN> --y <COLUMN>
+```
+
+#### Arguments
+Same as `bar` command, but optimized for stacked visualization.
+
+#### Examples
+```bash
+# Stacked bars for composition analysis
+graff bar-stacked --input events.csv --x week --y eventCount --group eventName
+
+# With aggregation
+graff bar-stacked --input sessions.csv --x date --y sessions --group deviceCategory --agg sum
+```
+
+### `graff scatter`
+
+Generate scatter plots for correlation analysis.
+
+```bash
+graff scatter [OPTIONS] --input <FILE> --x <COLUMN> --y <COLUMN>
+```
+
+#### Arguments
+Same as `line` command, with additional:
+- `--group <COLUMN>` - Group by column (for color coding points)
+
+#### Examples
+```bash
+# Basic scatter plot
+graff scatter --input data.csv --x x_value --y y_value --title "Correlation Analysis"
+
+# With grouping for color coding
+graff scatter --input data.csv --x x_value --y y_value --group category --title "Correlation by Category"
+```
+
 ### `graff heatmap`
 
 Generate heatmaps for 2D data visualization.
