@@ -100,7 +100,7 @@ enum DateFormat {
     YyyyMmDd,    // YYYYMMDD
     MmDdYyyy,    // MM/DD/YYYY
     #[allow(dead_code)]
-    DdMmYyyy,    // DD/MM/YYYY
+    DdMmYyyy, // DD/MM/YYYY
 }
 
 impl DateFormat {

@@ -29,7 +29,8 @@ pub fn apply_transforms(lf: LazyFrame, config: &TransformConfig) -> Result<LazyF
 
     // Apply grouping and aggregation
     if let Some(group_col) = &config.group_by
-        && let Some(agg_type) = &config.agg {
+        && let Some(agg_type) = &config.agg
+    {
         result = apply_grouping(result, group_col, agg_type)?;
     }
 

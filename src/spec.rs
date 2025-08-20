@@ -208,7 +208,8 @@ impl ChartConfig {
 
         // Validate dimensions
         if let Some(width) = self.width
-            && !(100..=10000).contains(&width) {
+            && !(100..=10000).contains(&width)
+        {
             anyhow::bail!(
                 "Chart width must be between 100 and 10000 pixels, got {}",
                 width
@@ -216,7 +217,8 @@ impl ChartConfig {
         }
 
         if let Some(height) = self.height
-            && !(100..=10000).contains(&height) {
+            && !(100..=10000).contains(&height)
+        {
             anyhow::bail!(
                 "Chart height must be between 100 and 10000 pixels, got {}",
                 height
@@ -225,13 +227,15 @@ impl ChartConfig {
 
         // Validate scale
         if let Some(scale) = self.scale
-            && (scale <= 0.0 || scale > 10.0) {
+            && (scale <= 0.0 || scale > 10.0)
+        {
             anyhow::bail!("Chart scale must be between 0.1 and 10.0, got {}", scale);
         }
 
         // Validate bins for heatmaps
         if let Some(bins) = self.bins
-            && !(2..=100).contains(&bins) {
+            && !(2..=100).contains(&bins)
+        {
             anyhow::bail!("Heatmap bins must be between 2 and 100, got {}", bins);
         }
 
@@ -319,7 +323,8 @@ impl ChartConfig {
         }
 
         if let Some(expression) = &filter.expression
-            && expression.trim().is_empty() {
+            && expression.trim().is_empty()
+        {
             anyhow::bail!("Filter expression cannot be empty");
         }
 
