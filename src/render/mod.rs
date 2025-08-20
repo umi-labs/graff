@@ -1,18 +1,16 @@
+use crate::spec::{ChartConfig, ChartType, OutputFormat};
 use anyhow::{Context, Result};
+use plotters::prelude::*;
 use polars::prelude::*;
 use std::path::Path;
-use crate::spec::{ChartConfig, ChartType, OutputFormat};
-use plotters::prelude::*;
 
 pub mod styling;
 
-pub fn render_chart(
-    data: LazyFrame,
-    config: &ChartConfig,
-    output_path: &Path,
-) -> Result<()> {
+pub fn render_chart(data: LazyFrame, config: &ChartConfig, output_path: &Path) -> Result<()> {
     // Collect the data for rendering
-    let df = data.collect().context("Failed to collect data for rendering")?;
+    let df = data
+        .collect()
+        .context("Failed to collect data for rendering")?;
 
     // Calculate dimensions
     let width = config.width.unwrap_or(800);
@@ -25,9 +23,7 @@ pub fn render_chart(
         OutputFormat::Png => {
             render_to_bitmap(&df, config, output_path, scaled_width, scaled_height)
         }
-        OutputFormat::Svg => {
-            render_to_svg(&df, config, output_path, scaled_width, scaled_height)
-        }
+        OutputFormat::Svg => render_to_svg(&df, config, output_path, scaled_width, scaled_height),
         OutputFormat::Pdf => {
             // For now, render as PNG for PDF (could be enhanced later)
             render_to_bitmap(&df, config, output_path, scaled_width, scaled_height)
@@ -42,8 +38,7 @@ fn render_to_bitmap(
     width: u32,
     height: u32,
 ) -> Result<()> {
-    let backend = BitMapBackend::new(output_path, (width, height))
-        .into_drawing_area();
+    let backend = BitMapBackend::new(output_path, (width, height)).into_drawing_area();
     render_chart_impl(df, config, backend)
 }
 
@@ -54,8 +49,7 @@ fn render_to_svg(
     width: u32,
     height: u32,
 ) -> Result<()> {
-    let backend = SVGBackend::new(output_path, (width, height))
-        .into_drawing_area();
+    let backend = SVGBackend::new(output_path, (width, height)).into_drawing_area();
     render_chart_impl(df, config, backend)
 }
 
@@ -70,55 +64,76 @@ where
     // Get theme from config or default to light
     let theme = config.theme.as_ref().unwrap_or(&crate::spec::Theme::Light);
     let style = crate::render::styling::get_chart_style_with_theme(theme);
-    
+
     // Fill with theme-appropriate background
-    root.fill(&style.colors.background.canvas).context("Failed to fill background")?;
+    root.fill(&style.colors.background.canvas)
+        .context("Failed to fill background")?;
 
     // Get the title
     let title = config.title.as_deref().unwrap_or("Chart");
-    
+
     // Get legend position (default to Right if not specified)
-    let legend_position = config.legend_position.as_ref().unwrap_or(&crate::spec::LegendPosition::Right);
-    
+    let legend_position = config
+        .legend_position
+        .as_ref()
+        .unwrap_or(&crate::spec::LegendPosition::Right);
+
     // Split the drawing area based on legend position
     let (chart_area, legend_area) = split_drawing_area(&root, legend_position)?;
-    
+
     // Render the chart in the chart area
     match config.chart_type {
-        ChartType::Line => crate::chart::line::render(df, config, chart_area, title, legend_position),
-        ChartType::Area => crate::chart::area::render(df, config, chart_area, title, legend_position),
+        ChartType::Line => {
+            crate::chart::line::render(df, config, chart_area, title, legend_position)
+        }
+        ChartType::Area => {
+            crate::chart::area::render(df, config, chart_area, title, legend_position)
+        }
         ChartType::Bar => crate::chart::bar::render(df, config, chart_area, title, legend_position),
-        ChartType::BarStacked => crate::chart::bar_stacked::render(df, config, chart_area, title, legend_position),
-        ChartType::Heatmap => crate::chart::heatmap::render(df, config, chart_area, title, legend_position),
-        ChartType::Scatter => crate::chart::scatter::render(df, config, chart_area, title, legend_position),
-        ChartType::Funnel => crate::chart::funnel::render(df, config, chart_area, title, legend_position),
-        ChartType::Retention => crate::chart::retention::render(df, config, chart_area, title, legend_position),
+        ChartType::BarStacked => {
+            crate::chart::bar_stacked::render(df, config, chart_area, title, legend_position)
+        }
+        ChartType::Heatmap => {
+            crate::chart::heatmap::render(df, config, chart_area, title, legend_position)
+        }
+        ChartType::Scatter => {
+            crate::chart::scatter::render(df, config, chart_area, title, legend_position)
+        }
+        ChartType::Funnel => {
+            crate::chart::funnel::render(df, config, chart_area, title, legend_position)
+        }
+        ChartType::Retention => {
+            crate::chart::retention::render(df, config, chart_area, title, legend_position)
+        }
     }?;
-    
+
     // Render the legend in the legend area
     render_external_legend(df, config, legend_area, legend_position)?;
-    
+
     Ok(())
 }
 
 fn split_drawing_area<DB: DrawingBackend>(
     root: &DrawingArea<DB, plotters::coord::Shift>,
     legend_position: &crate::spec::LegendPosition,
-) -> Result<(DrawingArea<DB, plotters::coord::Shift>, DrawingArea<DB, plotters::coord::Shift>)>
+) -> Result<(
+    DrawingArea<DB, plotters::coord::Shift>,
+    DrawingArea<DB, plotters::coord::Shift>,
+)>
 where
     DB::ErrorType: 'static + std::error::Error + Send + Sync,
 {
     let (width, height) = root.dim_in_pixel();
-    
+
     // Adjust legend space based on position - horizontal legends need more width
     let legend_width = match legend_position {
         crate::spec::LegendPosition::Right | crate::spec::LegendPosition::Left => {
             (width as f32 * 0.25) as u32 // 25% for horizontal legends
         }
-        _ => (width as f32 * 0.15) as u32 // 15% for vertical legends
+        _ => (width as f32 * 0.15) as u32, // 15% for vertical legends
     };
     let legend_height = (height as f32 * 0.15) as u32; // 15% of height for legend
-    
+
     match legend_position {
         crate::spec::LegendPosition::Right => {
             let (left, right) = root.split_horizontally(width - legend_width);
@@ -151,56 +166,62 @@ where
     // Get theme from config or default to light
     let theme = config.theme.as_ref().unwrap_or(&crate::spec::Theme::Light);
     let style = crate::render::styling::get_chart_style_with_theme(theme);
-    
+
     // Fill legend area with theme-appropriate background
-    legend_area.fill(&style.colors.background.chart).context("Failed to fill legend background")?;
-    
+    legend_area
+        .fill(&style.colors.background.chart)
+        .context("Failed to fill legend background")?;
+
     // Get legend items based on chart type
     let legend_items = get_legend_items(df, config)?;
-    
+
     // Get legend area dimensions for better text handling
     let (legend_width, _legend_height) = legend_area.dim_in_pixel();
-    
+
     // Render legend items
     let style = crate::render::styling::get_chart_style();
     let mut y_offset = 30; // Start 30 pixels from top for better spacing
-    
+
     for (index, item) in legend_items.iter().enumerate() {
         let color = style.get_primary_color(index);
-        
+
         // Draw legend symbol
-        legend_area.draw(&Rectangle::new(
-            [(15, y_offset), (35, y_offset + 15)],
-            color.filled()
-        )).context("Failed to draw legend symbol")?;
-        
+        legend_area
+            .draw(&Rectangle::new(
+                [(15, y_offset), (35, y_offset + 15)],
+                color.filled(),
+            ))
+            .context("Failed to draw legend symbol")?;
+
         // Calculate available text width (legend width minus symbol and padding)
         let available_width = legend_width.saturating_sub(60); // 60px for symbol + padding
         let max_chars = (available_width as f32 / 8.0) as usize; // Approximate chars per pixel
-        
+
         // Truncate text based on available space
         let display_text = if item.len() > max_chars && max_chars > 10 {
             format!("{}...", &item[..max_chars.saturating_sub(3)])
         } else {
             item.clone()
         };
-        
+
         // Draw legend text with better positioning
-        legend_area.draw(&Text::new(
-            display_text.as_str(),
-            (45, y_offset + 12),
-            style.axis_label_font()
-        )).context("Failed to draw legend text")?;
-        
+        legend_area
+            .draw(&Text::new(
+                display_text.as_str(),
+                (45, y_offset + 12),
+                style.axis_label_font(),
+            ))
+            .context("Failed to draw legend text")?;
+
         y_offset += 35; // Increase spacing between legend items
     }
-    
+
     Ok(())
 }
 
 fn get_legend_items(df: &DataFrame, config: &ChartConfig) -> Result<Vec<String>> {
     let mut items = Vec::new();
-    
+
     match config.chart_type {
         ChartType::Line => {
             if let Some(y) = &config.y {
@@ -242,7 +263,8 @@ fn get_legend_items(df: &DataFrame, config: &ChartConfig) -> Result<Vec<String>>
                 if let Some(step_order) = &config.step_order {
                     // Validate and apply order
                     if step_order.len() == steps.len() {
-                        let ordered_steps: Vec<String> = step_order.iter()
+                        let ordered_steps: Vec<String> = step_order
+                            .iter()
                             .filter_map(|&idx| steps.get(idx).cloned())
                             .collect();
                         items.extend(ordered_steps);
@@ -264,7 +286,7 @@ fn get_legend_items(df: &DataFrame, config: &ChartConfig) -> Result<Vec<String>>
             }
         }
     }
-    
+
     Ok(items)
 }
 
@@ -292,7 +314,13 @@ pub fn generate_output_filename(
     // Sanitize the title for filename
     let safe_title = title
         .chars()
-        .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '-' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '-'
+            }
+        })
         .collect::<String>()
         .to_lowercase();
 

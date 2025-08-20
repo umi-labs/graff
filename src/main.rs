@@ -1,8 +1,8 @@
-mod cli;
-mod spec;
-mod data;
 mod chart;
+mod cli;
+mod data;
 mod render;
+mod spec;
 
 use anyhow::Result;
 use clap::Parser;

@@ -1,11 +1,13 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "graff")]
-#[command(about = "Fast, deterministic Rust CLI for converting CSV data into beautiful PNG/SVG/PDF charts")]
+#[command(
+    about = "Fast, deterministic Rust CLI for converting CSV data into beautiful PNG/SVG/PDF charts"
+)]
 #[command(version)]
 pub struct Cli {
     #[command(subcommand)]
@@ -496,8 +498,11 @@ fn parse_filter_string(filter_str: &str) -> Result<crate::spec::FilterConfig> {
     // Simple filter parsing - for now just create a basic filter
     // This could be enhanced to parse more complex filter expressions
     let mut include = std::collections::HashMap::new();
-    include.insert("expression".to_string(), crate::spec::FilterValue::Single(filter_str.to_string()));
-    
+    include.insert(
+        "expression".to_string(),
+        crate::spec::FilterValue::Single(filter_str.to_string()),
+    );
+
     Ok(crate::spec::FilterConfig {
         include: Some(include),
         exclude: None,
@@ -512,33 +517,15 @@ pub fn run(cli: Cli) -> Result<()> {
     }
 
     match cli.command {
-        Commands::Line(args) => {
-            render_line_chart_cli(args, &cli.theme)
-        }
-        Commands::Area(args) => {
-            render_area_chart_cli(args, &cli.theme)
-        }
-        Commands::Bar(args) => {
-            render_bar_chart_cli(args, &cli.theme)
-        }
-        Commands::BarStacked(args) => {
-            render_bar_stacked_chart_cli(args, &cli.theme)
-        }
-        Commands::Heatmap(args) => {
-            render_heatmap_chart_cli(args, &cli.theme)
-        }
-        Commands::Scatter(args) => {
-            render_scatter_chart_cli(args, &cli.theme)
-        }
-        Commands::Funnel(args) => {
-            render_funnel_chart_cli(args, &cli.theme)
-        }
-        Commands::Retention(args) => {
-            render_retention_chart_cli(args, &cli.theme)
-        }
-        Commands::Render(args) => {
-            render_batch_charts(args)
-        }
+        Commands::Line(args) => render_line_chart_cli(args, &cli.theme),
+        Commands::Area(args) => render_area_chart_cli(args, &cli.theme),
+        Commands::Bar(args) => render_bar_chart_cli(args, &cli.theme),
+        Commands::BarStacked(args) => render_bar_stacked_chart_cli(args, &cli.theme),
+        Commands::Heatmap(args) => render_heatmap_chart_cli(args, &cli.theme),
+        Commands::Scatter(args) => render_scatter_chart_cli(args, &cli.theme),
+        Commands::Funnel(args) => render_funnel_chart_cli(args, &cli.theme),
+        Commands::Retention(args) => render_retention_chart_cli(args, &cli.theme),
+        Commands::Render(args) => render_batch_charts(args),
     }
 }
 
@@ -553,7 +540,11 @@ fn render_line_chart_cli(args: LineArgs, theme: &Theme) -> Result<()> {
         z: None,
         group_by: args.group.clone(),
         agg: Some(convert_agg_type(&args.agg)),
-        filter: args.filter.as_ref().map(|f| parse_filter_string(f)).transpose()?,
+        filter: args
+            .filter
+            .as_ref()
+            .map(|f| parse_filter_string(f))
+            .transpose()?,
         derive: None,
         sort: None,
         limit: None,
@@ -583,7 +574,9 @@ fn render_line_chart_cli(args: LineArgs, theme: &Theme) -> Result<()> {
     let output_path = if let Some(out_path) = &args.out {
         out_path.clone()
     } else {
-        let input_stem = args.input.file_stem()
+        let input_stem = args
+            .input
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("line");
         PathBuf::from(format!("{}-line.png", input_stem))
@@ -591,7 +584,7 @@ fn render_line_chart_cli(args: LineArgs, theme: &Theme) -> Result<()> {
 
     // Render the chart using the existing pipeline
     process_single_chart(&args.input, &chart_config, &output_path)?;
-    
+
     println!("✅ Generated line chart: {}", output_path.display());
     Ok(())
 }
@@ -607,7 +600,11 @@ fn render_area_chart_cli(args: AreaArgs, theme: &Theme) -> Result<()> {
         z: None,
         group_by: args.group.clone(),
         agg: Some(convert_agg_type(&args.agg)),
-        filter: args.filter.as_ref().map(|f| parse_filter_string(f)).transpose()?,
+        filter: args
+            .filter
+            .as_ref()
+            .map(|f| parse_filter_string(f))
+            .transpose()?,
         derive: None,
         sort: None,
         limit: None,
@@ -637,7 +634,9 @@ fn render_area_chart_cli(args: AreaArgs, theme: &Theme) -> Result<()> {
     let output_path = if let Some(out_path) = &args.out {
         out_path.clone()
     } else {
-        let input_stem = args.input.file_stem()
+        let input_stem = args
+            .input
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("area");
         PathBuf::from(format!("{}-area.png", input_stem))
@@ -645,7 +644,7 @@ fn render_area_chart_cli(args: AreaArgs, theme: &Theme) -> Result<()> {
 
     // Render the chart using the existing pipeline
     process_single_chart(&args.input, &chart_config, &output_path)?;
-    
+
     println!("✅ Generated area chart: {}", output_path.display());
     Ok(())
 }
@@ -661,7 +660,11 @@ fn render_bar_chart_cli(args: BarArgs, theme: &Theme) -> Result<()> {
         z: None,
         group_by: args.group.clone(),
         agg: Some(convert_agg_type(&args.agg)),
-        filter: args.filter.as_ref().map(|f| parse_filter_string(f)).transpose()?,
+        filter: args
+            .filter
+            .as_ref()
+            .map(|f| parse_filter_string(f))
+            .transpose()?,
         derive: None,
         sort: None,
         limit: None,
@@ -691,7 +694,9 @@ fn render_bar_chart_cli(args: BarArgs, theme: &Theme) -> Result<()> {
     let output_path = if let Some(out_path) = &args.out {
         out_path.clone()
     } else {
-        let input_stem = args.input.file_stem()
+        let input_stem = args
+            .input
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("bar");
         PathBuf::from(format!("{}-bar.png", input_stem))
@@ -699,7 +704,7 @@ fn render_bar_chart_cli(args: BarArgs, theme: &Theme) -> Result<()> {
 
     // Render the chart using the existing pipeline
     process_single_chart(&args.input, &chart_config, &output_path)?;
-    
+
     println!("✅ Generated bar chart: {}", output_path.display());
     Ok(())
 }
@@ -745,7 +750,9 @@ fn render_heatmap_chart_cli(args: HeatmapArgs, theme: &Theme) -> Result<()> {
     let output_path = if let Some(out_path) = &args.out {
         out_path.clone()
     } else {
-        let input_stem = args.input.file_stem()
+        let input_stem = args
+            .input
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("heatmap");
         PathBuf::from(format!("{}-heatmap.png", input_stem))
@@ -753,7 +760,7 @@ fn render_heatmap_chart_cli(args: HeatmapArgs, theme: &Theme) -> Result<()> {
 
     // Render the chart using the existing pipeline
     process_single_chart(&args.input, &chart_config, &output_path)?;
-    
+
     println!("✅ Generated heatmap: {}", output_path.display());
     Ok(())
 }
@@ -799,7 +806,9 @@ fn render_retention_chart_cli(args: RetentionArgs, theme: &Theme) -> Result<()> 
     let output_path = if let Some(out_path) = &args.out {
         out_path.clone()
     } else {
-        let input_stem = args.input.file_stem()
+        let input_stem = args
+            .input
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("retention");
         PathBuf::from(format!("{}-retention.png", input_stem))
@@ -807,7 +816,7 @@ fn render_retention_chart_cli(args: RetentionArgs, theme: &Theme) -> Result<()> 
 
     // Render the chart using the existing pipeline
     process_single_chart(&args.input, &chart_config, &output_path)?;
-    
+
     println!("✅ Generated retention chart: {}", output_path.display());
     Ok(())
 }
@@ -823,7 +832,11 @@ fn render_bar_stacked_chart_cli(args: BarStackedArgs, theme: &Theme) -> Result<(
         z: None,
         group_by: args.group.clone(),
         agg: Some(convert_agg_type(&args.agg)),
-        filter: args.filter.as_ref().map(|f| parse_filter_string(f)).transpose()?,
+        filter: args
+            .filter
+            .as_ref()
+            .map(|f| parse_filter_string(f))
+            .transpose()?,
         derive: None,
         sort: None,
         limit: None,
@@ -853,7 +866,9 @@ fn render_bar_stacked_chart_cli(args: BarStackedArgs, theme: &Theme) -> Result<(
     let output_path = if let Some(out_path) = &args.out {
         out_path.clone()
     } else {
-        let input_stem = args.input.file_stem()
+        let input_stem = args
+            .input
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("bar-stacked");
         PathBuf::from(format!("{}-bar-stacked.png", input_stem))
@@ -861,7 +876,7 @@ fn render_bar_stacked_chart_cli(args: BarStackedArgs, theme: &Theme) -> Result<(
 
     // Render the chart using the existing pipeline
     process_single_chart(&args.input, &chart_config, &output_path)?;
-    
+
     println!("✅ Generated stacked bar chart: {}", output_path.display());
     Ok(())
 }
@@ -877,7 +892,11 @@ fn render_scatter_chart_cli(args: ScatterArgs, theme: &Theme) -> Result<()> {
         z: None,
         group_by: args.group.clone(),
         agg: None, // No aggregation for scatter plots
-        filter: args.filter.as_ref().map(|f| parse_filter_string(f)).transpose()?,
+        filter: args
+            .filter
+            .as_ref()
+            .map(|f| parse_filter_string(f))
+            .transpose()?,
         derive: None,
         sort: None,
         limit: None,
@@ -907,7 +926,9 @@ fn render_scatter_chart_cli(args: ScatterArgs, theme: &Theme) -> Result<()> {
     let output_path = if let Some(out_path) = &args.out {
         out_path.clone()
     } else {
-        let input_stem = args.input.file_stem()
+        let input_stem = args
+            .input
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("scatter");
         PathBuf::from(format!("{}-scatter.png", input_stem))
@@ -915,14 +936,16 @@ fn render_scatter_chart_cli(args: ScatterArgs, theme: &Theme) -> Result<()> {
 
     // Render the chart using the existing pipeline
     process_single_chart(&args.input, &chart_config, &output_path)?;
-    
+
     println!("✅ Generated scatter plot: {}", output_path.display());
     Ok(())
 }
 
 fn render_funnel_chart_cli(args: FunnelArgs, theme: &Theme) -> Result<()> {
     // Parse steps from comma-separated string
-    let steps: Vec<String> = args.steps.split(',')
+    let steps: Vec<String> = args
+        .steps
+        .split(',')
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
         .collect();
@@ -974,7 +997,9 @@ fn render_funnel_chart_cli(args: FunnelArgs, theme: &Theme) -> Result<()> {
     let output_path = if let Some(out_path) = &args.out {
         out_path.clone()
     } else {
-        let input_stem = args.input.file_stem()
+        let input_stem = args
+            .input
+            .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("funnel");
         PathBuf::from(format!("{}-funnel.png", input_stem))
@@ -982,19 +1007,23 @@ fn render_funnel_chart_cli(args: FunnelArgs, theme: &Theme) -> Result<()> {
 
     // Render the chart using the existing pipeline
     process_single_chart(&args.input, &chart_config, &output_path)?;
-    
+
     println!("✅ Generated funnel chart: {}", output_path.display());
     Ok(())
 }
 
-fn handle_funnel_step_ordering(steps: &[String], step_order_arg: &Option<String>) -> Result<Vec<usize>> {
+fn handle_funnel_step_ordering(
+    steps: &[String],
+    step_order_arg: &Option<String>,
+) -> Result<Vec<usize>> {
     if let Some(step_order_str) = step_order_arg {
         // Parse provided step order
-        let order: Result<Vec<usize>, _> = step_order_str.split(',')
+        let order: Result<Vec<usize>, _> = step_order_str
+            .split(',')
             .map(|s| s.trim().parse::<usize>())
             .collect();
         let order = order.map_err(|e| anyhow::anyhow!("Invalid step order: {}", e))?;
-        
+
         // Validate step order
         validate_step_order(&order, steps.len())?;
         println!("✅ Using step order: {:?}", order);
@@ -1006,25 +1035,26 @@ fn handle_funnel_step_ordering(steps: &[String], step_order_arg: &Option<String>
         for (i, step) in steps.iter().enumerate() {
             println!("  {}: {}", i, step);
         }
-        
+
         println!("\nDefault order (by value): [0, 1, 2, 3, ...]");
         println!("Enter custom order (comma-separated indices) or press Enter for default:");
-        
+
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
         let input = input.trim();
-        
+
         let order = if input.is_empty() {
             // Use default order (0, 1, 2, 3, ...)
             (0..steps.len()).collect()
         } else {
             // Parse custom order
-            let order: Result<Vec<usize>, _> = input.split(',')
+            let order: Result<Vec<usize>, _> = input
+                .split(',')
                 .map(|s| s.trim().parse::<usize>())
                 .collect();
             order.map_err(|e| anyhow::anyhow!("Invalid step order: {}", e))?
         };
-        
+
         // Validate step order
         validate_step_order(&order, steps.len())?;
         println!("✅ Using step order: {:?}", order);
@@ -1034,16 +1064,19 @@ fn handle_funnel_step_ordering(steps: &[String], step_order_arg: &Option<String>
 
 fn validate_step_order(step_order: &[usize], num_steps: usize) -> Result<()> {
     if step_order.len() != num_steps {
-        anyhow::bail!("Step order length ({}) must match number of steps ({})", 
-                     step_order.len(), num_steps);
+        anyhow::bail!(
+            "Step order length ({}) must match number of steps ({})",
+            step_order.len(),
+            num_steps
+        );
     }
-    
+
     for &idx in step_order {
         if idx >= num_steps {
             anyhow::bail!("Invalid step order index: {} (max: {})", idx, num_steps - 1);
         }
     }
-    
+
     Ok(())
 }
 
@@ -1051,8 +1084,9 @@ fn render_batch_charts(args: RenderArgs) -> Result<()> {
     println!("Loading spec file: {}", args.spec.display());
 
     // Read and parse the spec file
-    let spec_content = fs::read_to_string(&args.spec)
-        .map_err(|e| anyhow::anyhow!("Failed to read spec file '{}': {}", args.spec.display(), e))?;
+    let spec_content = fs::read_to_string(&args.spec).map_err(|e| {
+        anyhow::anyhow!("Failed to read spec file '{}': {}", args.spec.display(), e)
+    })?;
 
     let spec = if args.spec.extension().and_then(|s| s.to_str()) == Some("json") {
         crate::spec::ChartSpec::from_json(&spec_content)?
@@ -1067,7 +1101,10 @@ fn render_batch_charts(args: RenderArgs) -> Result<()> {
         out_path.clone()
     } else {
         // Check if we're in development mode (running from the graff repo)
-        if std::env::current_dir().unwrap_or_default().ends_with("graff") {
+        if std::env::current_dir()
+            .unwrap_or_default()
+            .ends_with("graff")
+        {
             // Development mode: use tests/output for easier testing
             PathBuf::from("tests/output")
         } else {
@@ -1076,7 +1113,7 @@ fn render_batch_charts(args: RenderArgs) -> Result<()> {
             PathBuf::from(home).join("Desktop").join("graff")
         }
     };
-    
+
     // Create output directory if it doesn't exist
     if !output_dir.exists() {
         fs::create_dir_all(&output_dir)?;
@@ -1089,28 +1126,39 @@ fn render_batch_charts(args: RenderArgs) -> Result<()> {
 
     for (index, chart_config) in spec.charts.iter().enumerate() {
         let default_name = format!("chart_{}", index + 1);
-        let chart_name = chart_config.title
-            .as_deref()
-            .unwrap_or(&default_name);
-        
-        println!("Processing chart {}: {} ({:?})", index + 1, chart_name, chart_config.chart_type);
+        let chart_name = chart_config.title.as_deref().unwrap_or(&default_name);
+
+        println!(
+            "Processing chart {}: {} ({:?})",
+            index + 1,
+            chart_name,
+            chart_config.chart_type
+        );
 
         // Determine data source
-        let data_path = chart_config.data.as_ref()
+        let data_path = chart_config
+            .data
+            .as_ref()
             .or(spec.data.as_ref().and_then(|d| d.default.as_ref()))
-            .ok_or_else(|| anyhow::anyhow!("No data source specified for chart '{}'", chart_name))?;
+            .ok_or_else(|| {
+                anyhow::anyhow!("No data source specified for chart '{}'", chart_name)
+            })?;
 
         println!("  Data source: {}", data_path.display());
 
         // Generate output filename
-        let output_format = chart_config.format.as_ref().unwrap_or(&crate::spec::OutputFormat::Png);
+        let output_format = chart_config
+            .format
+            .as_ref()
+            .unwrap_or(&crate::spec::OutputFormat::Png);
         let extension = match output_format {
             crate::spec::OutputFormat::Png => "png",
-            crate::spec::OutputFormat::Svg => "svg", 
+            crate::spec::OutputFormat::Svg => "svg",
             crate::spec::OutputFormat::Pdf => "pdf",
         };
 
-        let filename = format!("{}-{:?}.{}", 
+        let filename = format!(
+            "{}-{:?}.{}",
             chart_name.to_lowercase().replace(' ', "-"),
             chart_config.chart_type,
             extension
@@ -1132,7 +1180,10 @@ fn render_batch_charts(args: RenderArgs) -> Result<()> {
     }
 
     // Print summary
-    println!("\nSummary: {} successful, {} failed", successful_charts, failed_charts);
+    println!(
+        "\nSummary: {} successful, {} failed",
+        successful_charts, failed_charts
+    );
 
     if failed_charts > 0 {
         std::process::exit(1);
@@ -1148,29 +1199,36 @@ fn process_single_chart(
 ) -> Result<()> {
     // Validate the chart config
     chart_config.validate()?;
-    
+
     // Load CSV data
     let load_options = crate::data::LoadOptions::default();
     let lf = crate::data::load_csv(data_path, &load_options)
         .with_context(|| format!("Failed to load data from {}", data_path.display()))?;
-    
+
     // Validate required columns exist
     let required_columns = get_required_columns(chart_config);
-    crate::data::validate_columns(&lf, &required_columns)
-        .with_context(|| format!("Column validation failed for chart '{}'", 
-            chart_config.title.as_deref().unwrap_or("unnamed")))?;
-    
+    crate::data::validate_columns(&lf, &required_columns).with_context(|| {
+        format!(
+            "Column validation failed for chart '{}'",
+            chart_config.title.as_deref().unwrap_or("unnamed")
+        )
+    })?;
+
     // Get column info for reporting
     let available_columns = crate::data::get_column_names(&lf)?;
-    println!("  Loaded data with {} columns: {:?}", available_columns.len(), available_columns);
-    
+    println!(
+        "  Loaded data with {} columns: {:?}",
+        available_columns.len(),
+        available_columns
+    );
+
     // Apply transformations (filters, grouping, aggregation)
     let processed_lf = apply_chart_transformations(lf, chart_config)?;
-    
+
     // Render chart with Plotters
     crate::render::render_chart(processed_lf, chart_config, output_path)
         .with_context(|| format!("Failed to render chart to {}", output_path.display()))?;
-    
+
     Ok(())
 }
 
@@ -1182,17 +1240,20 @@ fn apply_chart_transformations(
     if let Some(filter) = &config.filter {
         lf = apply_filter_config(lf, filter)?;
     }
-    
+
     // Apply grouping and aggregation if specified
     if let Some(agg) = &config.agg {
         // For charts with aggregation, group by the x-axis column unless explicitly specified
-        let group_by_col = config.group_by.as_ref().unwrap_or(config.x.as_ref().unwrap());
+        let group_by_col = config
+            .group_by
+            .as_ref()
+            .unwrap_or(config.x.as_ref().unwrap());
         lf = apply_aggregation(lf, group_by_col, config.y.as_ref().unwrap(), agg)?;
     } else if let Some(_group_by) = &config.group_by {
         // Handle grouping without aggregation (for line charts, etc.)
         // For now, just pass through - we might want to implement grouping logic here
     }
-    
+
     // Apply sorting if specified
     if let Some(sort) = &config.sort {
         for sort_config in sort {
@@ -1204,12 +1265,12 @@ fn apply_chart_transformations(
             lf = lf.sort(&sort_config.column, options);
         }
     }
-    
+
     // Apply limit if specified
     if let Some(limit) = config.limit {
         lf = lf.limit(limit as u32);
     }
-    
+
     Ok(lf)
 }
 
@@ -1218,7 +1279,7 @@ fn apply_filter_config(
     filter: &crate::spec::FilterConfig,
 ) -> Result<polars::prelude::LazyFrame> {
     use polars::prelude::*;
-    
+
     // Apply include filters
     if let Some(includes) = &filter.include {
         for (column, values) in includes {
@@ -1235,7 +1296,7 @@ fn apply_filter_config(
             lf = lf.filter(filter_expr);
         }
     }
-    
+
     // Apply exclude filters
     if let Some(excludes) = &filter.exclude {
         for (column, values) in excludes {
@@ -1252,7 +1313,7 @@ fn apply_filter_config(
             lf = lf.filter(filter_expr);
         }
     }
-    
+
     Ok(lf)
 }
 
@@ -1263,7 +1324,7 @@ fn apply_aggregation(
     agg_type: &crate::spec::AggregationType,
 ) -> Result<polars::prelude::LazyFrame> {
     use polars::prelude::*;
-    
+
     let agg_expr = match agg_type {
         crate::spec::AggregationType::Sum => col(value_col).sum(),
         crate::spec::AggregationType::Mean => col(value_col).mean(),
@@ -1272,13 +1333,15 @@ fn apply_aggregation(
         crate::spec::AggregationType::Max => col(value_col).max(),
         crate::spec::AggregationType::Median => col(value_col).median(),
     };
-    
-    Ok(lf.group_by([col(group_by)]).agg([agg_expr.alias(value_col)]))
+
+    Ok(lf
+        .group_by([col(group_by)])
+        .agg([agg_expr.alias(value_col)]))
 }
 
 fn get_required_columns(chart_config: &crate::spec::ChartConfig) -> Vec<String> {
     let mut columns = Vec::new();
-    
+
     // Add x and y columns if they exist (for charts that need them)
     if let Some(x) = &chart_config.x {
         columns.push(x.clone());
@@ -1286,7 +1349,7 @@ fn get_required_columns(chart_config: &crate::spec::ChartConfig) -> Vec<String> 
     if let Some(y) = &chart_config.y {
         columns.push(y.clone());
     }
-    
+
     // Add chart-type specific required columns
     match chart_config.chart_type {
         crate::spec::ChartType::Heatmap => {
@@ -1307,11 +1370,11 @@ fn get_required_columns(chart_config: &crate::spec::ChartConfig) -> Vec<String> 
         }
         _ => {}
     }
-    
+
     // Add optional columns if they exist
     if let Some(group_by) = &chart_config.group_by {
         columns.push(group_by.clone());
     }
-    
+
     columns
 }

@@ -1,8 +1,8 @@
-use anyhow::{Context, Result};
-use polars::prelude::*;
-use plotters::prelude::*;
-use crate::spec::{ChartConfig, LegendPosition};
 use crate::render::styling::{get_chart_style, get_heatmap_style};
+use crate::spec::{ChartConfig, LegendPosition};
+use anyhow::{Context, Result};
+use plotters::prelude::*;
+use polars::prelude::*;
 
 pub fn render<DB: DrawingBackend>(
     df: &DataFrame,
@@ -15,29 +15,46 @@ where
     DB::ErrorType: 'static + std::error::Error + Send + Sync,
 {
     // For retention charts, we need cohort_date, period_number, and users
-    let cohort_date_col = config.cohort_date.as_ref()
+    let cohort_date_col = config
+        .cohort_date
+        .as_ref()
         .ok_or_else(|| anyhow::anyhow!("Retention charts require a 'cohort_date' field"))?;
-    let period_number_col = config.period_number.as_ref()
+    let period_number_col = config
+        .period_number
+        .as_ref()
         .ok_or_else(|| anyhow::anyhow!("Retention charts require a 'period_number' field"))?;
-    let users_col = config.users.as_ref()
+    let users_col = config
+        .users
+        .as_ref()
         .ok_or_else(|| anyhow::anyhow!("Retention charts require a 'users' field"))?;
 
-    let cohort_col = df.column(cohort_date_col).context("Cohort date column not found")?;
-    let period_col = df.column(period_number_col).context("Period number column not found")?;
+    let cohort_col = df
+        .column(cohort_date_col)
+        .context("Cohort date column not found")?;
+    let period_col = df
+        .column(period_number_col)
+        .context("Period number column not found")?;
     let users_data_col = df.column(users_col).context("Users column not found")?;
 
     // Collect retention data
-    let mut retention_data: std::collections::HashMap<String, std::collections::HashMap<i32, f32>> = std::collections::HashMap::new();
+    let mut retention_data: std::collections::HashMap<String, std::collections::HashMap<i32, f32>> =
+        std::collections::HashMap::new();
     let mut all_cohorts = std::collections::HashSet::new();
     let mut all_periods = std::collections::HashSet::new();
 
-    for i in 0..df.height().min(100) { // Limit for performance
-        if let (Ok(cohort_val), Ok(period_val), Ok(users_val)) = (cohort_col.get(i), period_col.get(i), users_data_col.get(i)) {
+    for i in 0..df.height().min(100) {
+        // Limit for performance
+        if let (Ok(cohort_val), Ok(period_val), Ok(users_val)) =
+            (cohort_col.get(i), period_col.get(i), users_data_col.get(i))
+        {
             let cohort_str = format!("{:?}", cohort_val);
             let period_num = extract_numeric_value(period_val).unwrap_or(0.0) as i32;
             let users_count = extract_numeric_value(users_val).unwrap_or(0.0);
-            
-            retention_data.entry(cohort_str.clone()).or_default().insert(period_num, users_count);
+
+            retention_data
+                .entry(cohort_str.clone())
+                .or_default()
+                .insert(period_num, users_count);
             all_cohorts.insert(cohort_str);
             all_periods.insert(period_num);
         }
@@ -58,24 +75,30 @@ where
     for cohort in &cohorts {
         let cohort_data = retention_data.get(cohort).unwrap();
         let mut cohort_retention = Vec::new();
-        
+
         // Find the first period value (baseline)
-        let baseline = periods.iter()
+        let baseline = periods
+            .iter()
             .filter_map(|&p| cohort_data.get(&p))
             .next()
             .unwrap_or(&0.0);
-        
+
         for &period in &periods {
             let value = cohort_data.get(&period).unwrap_or(&0.0);
-            let retention_pct = if *baseline > 0.0 { (value / baseline) * 100.0 } else { 0.0 };
+            let retention_pct = if *baseline > 0.0 {
+                (value / baseline) * 100.0
+            } else {
+                0.0
+            };
             cohort_retention.push(retention_pct);
         }
-        
+
         retention_matrix.push(cohort_retention);
     }
 
     // Find max retention for scaling
-    let max_retention = retention_matrix.iter()
+    let max_retention = retention_matrix
+        .iter()
         .flat_map(|row| row.iter())
         .fold(0.0f32, |max, &val| max.max(val));
 
@@ -94,7 +117,8 @@ where
         .build_cartesian_2d(0.0f32..periods.len() as f32, 0.0f32..cohorts.len() as f32)
         .context("Failed to build chart")?;
 
-    chart.configure_mesh()
+    chart
+        .configure_mesh()
         .x_desc("Period")
         .y_desc("Cohort")
         .axis_desc_style(style.axis_desc_font())
@@ -106,25 +130,26 @@ where
     for (cohort_idx, _cohort) in cohorts.iter().enumerate() {
         for (period_idx, &_period) in periods.iter().enumerate() {
             let retention_pct = retention_matrix[cohort_idx][period_idx];
-            
+
             // Calculate color intensity based on retention percentage
             let intensity = retention_pct / max_retention;
-            let base_color = heatmap_style.intensity_range.0 + 
-                (intensity * (heatmap_style.intensity_range.1 - heatmap_style.intensity_range.0));
+            let base_color = heatmap_style.intensity_range.0
+                + (intensity * (heatmap_style.intensity_range.1 - heatmap_style.intensity_range.0));
             let color = RGBColor(
                 base_color as u8,
                 (base_color * 0.8) as u8,
-                (base_color * 0.6) as u8
+                (base_color * 0.6) as u8,
             );
 
             // Draw retention cell
             chart
-                .draw_series(std::iter::once(
-                    Rectangle::new(
-                        [(period_idx as f32, cohort_idx as f32), ((period_idx + 1) as f32, (cohort_idx + 1) as f32)],
-                        color.filled()
-                    )
-                ))
+                .draw_series(std::iter::once(Rectangle::new(
+                    [
+                        (period_idx as f32, cohort_idx as f32),
+                        ((period_idx + 1) as f32, (cohort_idx + 1) as f32),
+                    ],
+                    color.filled(),
+                )))
                 .context("Failed to draw retention cell")?;
 
             // Note: Retention percentages are shown via color intensity instead to avoid lifetime issues

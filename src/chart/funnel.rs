@@ -1,8 +1,8 @@
-use anyhow::{Context, Result};
-use polars::prelude::*;
-use plotters::prelude::*;
-use crate::spec::{ChartConfig, LegendPosition};
 use crate::render::styling::get_chart_style;
+use crate::spec::{ChartConfig, LegendPosition};
+use anyhow::{Context, Result};
+use plotters::prelude::*;
+use polars::prelude::*;
 
 pub fn render<DB: DrawingBackend>(
     df: &DataFrame,
@@ -15,9 +15,13 @@ where
     DB::ErrorType: 'static + std::error::Error + Send + Sync,
 {
     // For funnel charts, we need steps and values
-    let steps = config.steps.as_ref()
+    let steps = config
+        .steps
+        .as_ref()
         .ok_or_else(|| anyhow::anyhow!("Funnel charts require a 'steps' field"))?;
-    let values_col = config.values.as_ref()
+    let values_col = config
+        .values
+        .as_ref()
         .ok_or_else(|| anyhow::anyhow!("Funnel charts require a 'values' field"))?;
 
     let values_col_data = df.column(values_col).context("Values column not found")?;
@@ -41,19 +45,29 @@ where
     let ordered_step_values = if let Some(step_order) = &config.step_order {
         // Validate step order
         if step_order.len() != step_values.len() {
-            anyhow::bail!("Step order length ({}) must match number of steps ({})", 
-                         step_order.len(), step_values.len());
+            anyhow::bail!(
+                "Step order length ({}) must match number of steps ({})",
+                step_order.len(),
+                step_values.len()
+            );
         }
-        
+
         // Check for valid indices
         for &idx in step_order {
             if idx >= step_values.len() {
-                anyhow::bail!("Invalid step order index: {} (max: {})", idx, step_values.len() - 1);
+                anyhow::bail!(
+                    "Invalid step order index: {} (max: {})",
+                    idx,
+                    step_values.len() - 1
+                );
             }
         }
-        
+
         // Reorder steps according to step_order
-        step_order.iter().map(|&idx| step_values[idx].clone()).collect()
+        step_order
+            .iter()
+            .map(|&idx| step_values[idx].clone())
+            .collect()
     } else {
         // Default order: largest value first (top of funnel)
         let mut sorted = step_values.clone();
@@ -62,22 +76,26 @@ where
     };
 
     // Find the maximum value for scaling
-    let max_value = ordered_step_values.iter().map(|(_, value)| *value).fold(0.0f32, f32::max);
+    let max_value = ordered_step_values
+        .iter()
+        .map(|(_, value)| *value)
+        .fold(0.0f32, f32::max);
     if max_value == 0.0 {
         return Ok(());
     }
 
     let style = get_chart_style();
-    
+
     // Fill background with white (no grid/axes needed for funnel)
     root.fill(&WHITE).context("Failed to fill background")?;
-    
+
     // Draw title
     root.draw(&Text::new(
         title,
         (root.dim_in_pixel().0 as i32 / 2 - 50, 20),
-        style.title_font()
-    )).context("Failed to draw title")?;
+        style.title_font(),
+    ))
+    .context("Failed to draw title")?;
 
     // Calculate funnel dimensions (centered in the drawing area)
     let (width, height) = root.dim_in_pixel();
@@ -89,14 +107,14 @@ where
     // Draw funnel segments (widest at top, narrowest at bottom)
     let num_steps = ordered_step_values.len();
     let segment_height = funnel_height / num_steps as u32;
-    
+
     for (step_idx, (step_name, value)) in ordered_step_values.iter().enumerate() {
         let color = style.get_primary_color(step_idx);
-        
+
         // Calculate segment dimensions (top to bottom)
         let segment_y_start = funnel_start_y + (step_idx as u32 * segment_height);
         let segment_y_end = segment_y_start + segment_height;
-        
+
         // Calculate width based on value (proportional to max_value)
         let width_ratio = value / max_value;
         let segment_width = (funnel_width as f32 * width_ratio) as u32;
@@ -105,14 +123,21 @@ where
 
         // Draw rectangle for funnel segment
         root.draw(&Rectangle::new(
-            [(segment_x_start as i32, segment_y_start as i32), 
-             (segment_x_end as i32, segment_y_end as i32)],
-            color.filled()
-        )).context("Failed to draw funnel segment")?;
+            [
+                (segment_x_start as i32, segment_y_start as i32),
+                (segment_x_end as i32, segment_y_end as i32),
+            ],
+            color.filled(),
+        ))
+        .context("Failed to draw funnel segment")?;
 
         // Draw step label based on value_labels position
         let label_text = format!("{}: {:.0}", step_name, value);
-        let (text_x, text_y) = match config.value_labels.as_ref().unwrap_or(&crate::spec::ValueLabelPosition::Right) {
+        let (text_x, text_y) = match config
+            .value_labels
+            .as_ref()
+            .unwrap_or(&crate::spec::ValueLabelPosition::Right)
+        {
             crate::spec::ValueLabelPosition::Left => {
                 // Position label on the left side of the funnel
                 let text_x = segment_x_start as i32 - 120; // 120px to the left
@@ -126,12 +151,13 @@ where
                 (text_x, text_y)
             }
         };
-        
+
         root.draw(&Text::new(
             label_text.as_str(),
             (text_x, text_y),
-            style.axis_label_font()
-        )).context("Failed to draw step label")?;
+            style.axis_label_font(),
+        ))
+        .context("Failed to draw step label")?;
     }
 
     // Legend is now handled externally

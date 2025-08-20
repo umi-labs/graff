@@ -1,8 +1,8 @@
-use anyhow::{Context, Result};
-use polars::prelude::*;
-use plotters::prelude::*;
-use crate::spec::{ChartConfig, LegendPosition};
 use crate::render::styling::get_chart_style;
+use crate::spec::{ChartConfig, LegendPosition};
+use anyhow::{Context, Result};
+use plotters::prelude::*;
+use polars::prelude::*;
 
 pub fn render<DB: DrawingBackend>(
     df: &DataFrame,
@@ -15,7 +15,7 @@ where
     DB::ErrorType: 'static + std::error::Error + Send + Sync,
 {
     let style = get_chart_style();
-    
+
     // Check if we have grouped data
     if let Some(group_by) = &config.group_by {
         render_grouped_line_chart(df, config, root, title, group_by, &style)
@@ -35,9 +35,13 @@ where
     DB::ErrorType: 'static + std::error::Error + Send + Sync,
 {
     // Extract x and y data
-    let x_col = df.column(config.x.as_ref().unwrap()).context("X column not found")?;
-    let y_col = df.column(config.y.as_ref().unwrap()).context("Y column not found")?;
-    
+    let x_col = df
+        .column(config.x.as_ref().unwrap())
+        .context("X column not found")?;
+    let y_col = df
+        .column(config.y.as_ref().unwrap())
+        .context("Y column not found")?;
+
     // Convert to vectors for plotting
     let mut data_points = Vec::new();
     for i in 0..df.height() {
@@ -48,7 +52,7 @@ where
             data_points.push((x, y));
         }
     }
-    
+
     if data_points.is_empty() {
         return Ok(()); // Nothing to plot
     }
@@ -65,7 +69,8 @@ where
         .build_cartesian_2d(x_range, y_range)
         .context("Failed to build chart")?;
 
-    chart.configure_mesh()
+    chart
+        .configure_mesh()
         .x_desc(config.x.as_ref().unwrap())
         .y_desc(config.y.as_ref().unwrap())
         .axis_desc_style(style.axis_desc_font())
@@ -75,13 +80,16 @@ where
 
     // Use the primary color for line charts
     chart
-        .draw_series(LineSeries::new(data_points.iter().cloned(), style.get_primary_color(0)).point_size(style.layout.elements.line_points))
+        .draw_series(
+            LineSeries::new(data_points.iter().cloned(), style.get_primary_color(0))
+                .point_size(style.layout.elements.line_points),
+        )
         .context("Failed to draw line series")?
         .label(config.y.as_ref().unwrap())
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], style.get_primary_color(0)));
 
     // Legend is now handled externally
-    
+
     root.present().context("Failed to present chart")?;
     Ok(())
 }
@@ -99,11 +107,13 @@ where
 {
     // For grouped data, we need to handle the structure differently
     // The data should have been transformed to have the group column and aggregated values
-    
+
     // Try to get the group column and value column
     let group_col = df.column(group_by).context("Group column not found")?;
-    let value_col = df.column(config.y.as_ref().unwrap()).context("Value column not found")?;
-    
+    let value_col = df
+        .column(config.y.as_ref().unwrap())
+        .context("Value column not found")?;
+
     // Convert to vectors for plotting
     let mut data_points = Vec::new();
     for i in 0..df.height() {
@@ -113,7 +123,7 @@ where
             data_points.push((x, y));
         }
     }
-    
+
     if data_points.is_empty() {
         return Ok(()); // Nothing to plot
     }
@@ -130,7 +140,8 @@ where
         .build_cartesian_2d(x_range, y_range)
         .context("Failed to build chart")?;
 
-    chart.configure_mesh()
+    chart
+        .configure_mesh()
         .x_desc(group_by)
         .y_desc(config.y.as_ref().unwrap())
         .axis_desc_style(style.axis_desc_font())
@@ -140,13 +151,16 @@ where
 
     // Use the primary color for line charts
     chart
-        .draw_series(LineSeries::new(data_points.iter().cloned(), style.get_primary_color(0)).point_size(style.layout.elements.line_points))
+        .draw_series(
+            LineSeries::new(data_points.iter().cloned(), style.get_primary_color(0))
+                .point_size(style.layout.elements.line_points),
+        )
         .context("Failed to draw line series")?
         .label(config.y.as_ref().unwrap())
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], style.get_primary_color(0)));
 
     // Legend is now handled externally
-    
+
     root.present().context("Failed to present chart")?;
     Ok(())
 }

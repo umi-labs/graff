@@ -1,7 +1,7 @@
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use anyhow::Context;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ChartSpec {
@@ -35,7 +35,7 @@ pub struct ChartConfig {
     pub theme: Option<Theme>,
     pub format: Option<OutputFormat>,
     pub scale: Option<f64>,
-    
+
     // Chart-specific fields
     pub stacked: Option<bool>,
     pub horizontal: Option<bool>,
@@ -158,7 +158,9 @@ impl ChartSpec {
         }
 
         for (index, chart) in self.charts.iter().enumerate() {
-            chart.validate().with_context(|| format!("Chart {} validation failed", index + 1))?;
+            chart
+                .validate()
+                .with_context(|| format!("Chart {} validation failed", index + 1))?;
         }
 
         Ok(())
@@ -207,13 +209,19 @@ impl ChartConfig {
         // Validate dimensions
         if let Some(width) = self.width {
             if width < 100 || width > 10000 {
-                anyhow::bail!("Chart width must be between 100 and 10000 pixels, got {}", width);
+                anyhow::bail!(
+                    "Chart width must be between 100 and 10000 pixels, got {}",
+                    width
+                );
             }
         }
 
         if let Some(height) = self.height {
             if height < 100 || height > 10000 {
-                anyhow::bail!("Chart height must be between 100 and 10000 pixels, got {}", height);
+                anyhow::bail!(
+                    "Chart height must be between 100 and 10000 pixels, got {}",
+                    height
+                );
             }
         }
 
@@ -246,7 +254,9 @@ impl ChartConfig {
         let has_expression = filter.expression.is_some();
 
         if !has_include && !has_exclude && !has_expression {
-            anyhow::bail!("Filter configuration must have at least one condition (include, exclude, or expression)");
+            anyhow::bail!(
+                "Filter configuration must have at least one condition (include, exclude, or expression)"
+            );
         }
 
         // Validate filter values
@@ -263,11 +273,17 @@ impl ChartConfig {
                     }
                     FilterValue::Multiple(values) => {
                         if values.is_empty() {
-                            anyhow::bail!("Filter values list cannot be empty for column '{}'", column);
+                            anyhow::bail!(
+                                "Filter values list cannot be empty for column '{}'",
+                                column
+                            );
                         }
                         for value in values {
                             if value.is_empty() {
-                                anyhow::bail!("Filter value cannot be empty for column '{}'", column);
+                                anyhow::bail!(
+                                    "Filter value cannot be empty for column '{}'",
+                                    column
+                                );
                             }
                         }
                     }
@@ -288,11 +304,17 @@ impl ChartConfig {
                     }
                     FilterValue::Multiple(values) => {
                         if values.is_empty() {
-                            anyhow::bail!("Filter values list cannot be empty for column '{}'", column);
+                            anyhow::bail!(
+                                "Filter values list cannot be empty for column '{}'",
+                                column
+                            );
                         }
                         for value in values {
                             if value.is_empty() {
-                                anyhow::bail!("Filter value cannot be empty for column '{}'", column);
+                                anyhow::bail!(
+                                    "Filter value cannot be empty for column '{}'",
+                                    column
+                                );
                             }
                         }
                     }

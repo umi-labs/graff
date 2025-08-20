@@ -1,5 +1,5 @@
-pub mod loader;
 pub mod derive;
+pub mod loader;
 pub mod transform;
 
 pub use loader::*;

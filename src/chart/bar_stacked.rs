@@ -1,8 +1,8 @@
-use anyhow::{Context, Result};
-use polars::prelude::*;
-use plotters::prelude::*;
-use crate::spec::{ChartConfig, LegendPosition};
 use crate::render::styling::get_chart_style;
+use crate::spec::{ChartConfig, LegendPosition};
+use anyhow::{Context, Result};
+use plotters::prelude::*;
+use polars::prelude::*;
 
 pub fn render<DB: DrawingBackend>(
     df: &DataFrame,
@@ -15,11 +15,13 @@ where
     DB::ErrorType: 'static + std::error::Error + Send + Sync,
 {
     let style = get_chart_style();
-    
+
     // For stacked bars, we need both x and group_by columns
-    let group_by_col = config.group_by.as_ref()
+    let group_by_col = config
+        .group_by
+        .as_ref()
         .ok_or_else(|| anyhow::anyhow!("Stacked bar charts require a 'group_by' field"))?;
-    
+
     // Check if we have the original x column or if we need to use the group column
     if let Ok(_) = df.column(config.x.as_ref().unwrap()) {
         render_stacked_bar_with_x(df, config, root, title, group_by_col, &style)
@@ -40,24 +42,37 @@ where
     DB::ErrorType: 'static + std::error::Error + Send + Sync,
 {
     // For stacked bars, we need both x and group_by columns
-    let x_col = df.column(config.x.as_ref().unwrap()).context("X column not found")?;
-    let y_col = df.column(config.y.as_ref().unwrap()).context("Y column not found")?;
+    let x_col = df
+        .column(config.x.as_ref().unwrap())
+        .context("X column not found")?;
+    let y_col = df
+        .column(config.y.as_ref().unwrap())
+        .context("Y column not found")?;
     let group_col = df.column(group_by_col).context("Group column not found")?;
 
     // Collect data and organize by x categories and groups
-    let mut category_data: std::collections::HashMap<String, std::collections::HashMap<String, f32>> = std::collections::HashMap::new();
+    let mut category_data: std::collections::HashMap<
+        String,
+        std::collections::HashMap<String, f32>,
+    > = std::collections::HashMap::new();
     let mut all_groups = std::collections::HashSet::new();
     let mut categories = Vec::new();
 
-    for i in 0..df.height().min(50) { // Limit for performance
-        if let (Ok(x_val), Ok(y_val), Ok(group_val)) = (x_col.get(i), y_col.get(i), group_col.get(i)) {
+    for i in 0..df.height().min(50) {
+        // Limit for performance
+        if let (Ok(x_val), Ok(y_val), Ok(group_val)) =
+            (x_col.get(i), y_col.get(i), group_col.get(i))
+        {
             let x_str = format!("{:?}", x_val);
             let group_str = format!("{:?}", group_val);
             let y = extract_numeric_value(y_val).unwrap_or(0.0);
-            
-            category_data.entry(x_str.clone()).or_default().insert(group_str.clone(), y);
+
+            category_data
+                .entry(x_str.clone())
+                .or_default()
+                .insert(group_str.clone(), y);
             all_groups.insert(group_str);
-            
+
             if !categories.contains(&x_str) {
                 categories.push(x_str);
             }
@@ -77,21 +92,23 @@ where
     for (cat_idx, category) in categories.iter().enumerate() {
         let mut current_stack = 0.0;
         let mut category_stacks = Vec::new();
-        
+
         for group in &groups {
-            let value = category_data.get(category)
+            let value = category_data
+                .get(category)
                 .and_then(|cat_map| cat_map.get(group))
                 .unwrap_or(&0.0);
-            
+
             category_stacks.push((current_stack, current_stack + value));
             current_stack += value;
         }
-        
+
         stacked_data.push((cat_idx, category_stacks));
     }
 
     // Find the maximum total height for scaling
-    let max_height = stacked_data.iter()
+    let max_height = stacked_data
+        .iter()
         .map(|(_, stacks)| stacks.last().map(|(_, end)| *end).unwrap_or(0.0))
         .fold(0.0f32, f32::max);
 
@@ -109,7 +126,8 @@ where
         .build_cartesian_2d(0usize..categories.len(), y_range)
         .context("Failed to build chart")?;
 
-    chart.configure_mesh()
+    chart
+        .configure_mesh()
         .y_desc(config.y.as_ref().unwrap())
         .x_desc(config.x.as_ref().unwrap())
         .axis_desc_style(style.axis_desc_font())
@@ -120,16 +138,12 @@ where
     // Draw stacked bars for each group
     for (group_idx, group) in groups.iter().enumerate() {
         let color = style.get_primary_color(group_idx);
-        
+
         chart
-            .draw_series(
-                stacked_data
-                    .iter()
-                    .map(|(cat_idx, stacks)| {
-                        let (start, end) = stacks[group_idx];
-                        Rectangle::new([(*cat_idx, start), (cat_idx + 1, end)], color.filled())
-                    })
-            )
+            .draw_series(stacked_data.iter().map(|(cat_idx, stacks)| {
+                let (start, end) = stacks[group_idx];
+                Rectangle::new([(*cat_idx, start), (cat_idx + 1, end)], color.filled())
+            }))
             .context("Failed to draw stacked bar series")?
             .label(group)
             .legend(|(x, y)| Rectangle::new([(x, y), (x + 10, y + 10)], color.filled()));
@@ -154,17 +168,20 @@ where
 {
     // For grouped data, we need to handle the structure differently
     let group_col = df.column(group_by_col).context("Group column not found")?;
-    let value_col = df.column(config.y.as_ref().unwrap()).context("Value column not found")?;
+    let value_col = df
+        .column(config.y.as_ref().unwrap())
+        .context("Value column not found")?;
 
     // Collect data and organize by groups
     let mut group_data: std::collections::HashMap<String, f32> = std::collections::HashMap::new();
     let mut groups = Vec::new();
 
-    for i in 0..df.height().min(50) { // Limit for performance
+    for i in 0..df.height().min(50) {
+        // Limit for performance
         if let (Ok(group_val), Ok(value_val)) = (group_col.get(i), value_col.get(i)) {
             let group_str = format!("{:?}", group_val);
             let value = extract_numeric_value(value_val).unwrap_or(0.0);
-            
+
             group_data.insert(group_str.clone(), value);
             if !groups.contains(&group_str) {
                 groups.push(group_str);
@@ -182,7 +199,7 @@ where
     // Calculate stacked values
     let mut stacked_data = Vec::new();
     let mut current_stack = 0.0;
-    
+
     for group in &groups {
         let value = group_data.get(group).unwrap_or(&0.0);
         stacked_data.push((current_stack, current_stack + value));
@@ -204,7 +221,8 @@ where
         .build_cartesian_2d(0usize..1, y_range)
         .context("Failed to build chart")?;
 
-    chart.configure_mesh()
+    chart
+        .configure_mesh()
         .y_desc(config.y.as_ref().unwrap())
         .x_desc(group_by_col)
         .axis_desc_style(style.axis_desc_font())
@@ -216,11 +234,12 @@ where
     for (group_idx, group) in groups.iter().enumerate() {
         let color = style.get_primary_color(group_idx);
         let (start, end) = stacked_data[group_idx];
-        
+
         chart
-            .draw_series(std::iter::once(
-                Rectangle::new([(0, start), (1, end)], color.filled())
-            ))
+            .draw_series(std::iter::once(Rectangle::new(
+                [(0, start), (1, end)],
+                color.filled(),
+            )))
             .context("Failed to draw stacked bar series")?
             .label(group)
             .legend(|(x, y)| Rectangle::new([(x, y), (x + 10, y + 10)], color.filled()));

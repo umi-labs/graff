@@ -1,8 +1,8 @@
-use anyhow::{Context, Result};
-use polars::prelude::*;
-use plotters::prelude::*;
-use crate::spec::{ChartConfig, LegendPosition};
 use crate::render::styling::get_chart_style;
+use crate::spec::{ChartConfig, LegendPosition};
+use anyhow::{Context, Result};
+use plotters::prelude::*;
+use polars::prelude::*;
 
 pub fn render<DB: DrawingBackend>(
     df: &DataFrame,
@@ -15,7 +15,7 @@ where
     DB::ErrorType: 'static + std::error::Error + Send + Sync,
 {
     let style = get_chart_style();
-    
+
     // Check if we have grouped data
     if let Some(group_by) = &config.group_by {
         render_grouped_bar_chart(df, config, root, title, group_by, &style)
@@ -34,20 +34,25 @@ fn render_simple_bar_chart<DB: DrawingBackend>(
 where
     DB::ErrorType: 'static + std::error::Error + Send + Sync,
 {
-    let x_col = df.column(config.x.as_ref().unwrap()).context("X column not found")?;
-    let y_col = df.column(config.y.as_ref().unwrap()).context("Y column not found")?;
-    
+    let x_col = df
+        .column(config.x.as_ref().unwrap())
+        .context("X column not found")?;
+    let y_col = df
+        .column(config.y.as_ref().unwrap())
+        .context("Y column not found")?;
+
     let mut data_points = Vec::new();
     let mut _x_labels = Vec::new();
-    
-    for i in 0..df.height().min(20) { // Limit to 20 bars for readability
+
+    for i in 0..df.height().min(20) {
+        // Limit to 20 bars for readability
         if let (Ok(x_val), Ok(y_val)) = (x_col.get(i), y_col.get(i)) {
             let y = extract_numeric_value(y_val).unwrap_or(0.0);
             data_points.push((i, y));
             _x_labels.push(format!("{:?}", x_val));
         }
     }
-    
+
     if data_points.is_empty() {
         return Ok(());
     }
@@ -63,7 +68,8 @@ where
         .build_cartesian_2d(0usize..data_points.len(), y_range)
         .context("Failed to build chart")?;
 
-    chart.configure_mesh()
+    chart
+        .configure_mesh()
         .y_desc(config.y.as_ref().unwrap())
         .x_desc(config.x.as_ref().unwrap())
         .axis_desc_style(style.axis_desc_font())
@@ -72,15 +78,10 @@ where
         .context("Failed to draw mesh")?;
 
     chart
-        .draw_series(
-            data_points
-                .iter()
-                .enumerate()
-                .map(|(i, (_, y))| {
-                    let color = style.get_primary_color(i);
-                    Rectangle::new([(i, 0.0), (i + 1, *y)], color.filled())
-                }),
-        )
+        .draw_series(data_points.iter().enumerate().map(|(i, (_, y))| {
+            let color = style.get_primary_color(i);
+            Rectangle::new([(i, 0.0), (i + 1, *y)], color.filled())
+        }))
         .context("Failed to draw bar series")?
         .label(config.y.as_ref().unwrap())
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], style.get_primary_color(0)));
@@ -104,19 +105,22 @@ where
 {
     // For grouped data, we need to handle the structure differently
     let group_col = df.column(group_by).context("Group column not found")?;
-    let value_col = df.column(config.y.as_ref().unwrap()).context("Value column not found")?;
-    
+    let value_col = df
+        .column(config.y.as_ref().unwrap())
+        .context("Value column not found")?;
+
     let mut data_points = Vec::new();
     let mut _x_labels = Vec::new();
-    
-    for i in 0..df.height().min(20) { // Limit to 20 bars for readability
+
+    for i in 0..df.height().min(20) {
+        // Limit to 20 bars for readability
         if let (Ok(_group_val), Ok(value_val)) = (group_col.get(i), value_col.get(i)) {
             let y = extract_numeric_value(value_val).unwrap_or(0.0);
             data_points.push((i, y));
             _x_labels.push(format!("Group {}", i));
         }
     }
-    
+
     if data_points.is_empty() {
         return Ok(());
     }
@@ -132,7 +136,8 @@ where
         .build_cartesian_2d(0usize..data_points.len(), y_range)
         .context("Failed to build chart")?;
 
-    chart.configure_mesh()
+    chart
+        .configure_mesh()
         .y_desc(config.y.as_ref().unwrap())
         .x_desc(group_by)
         .axis_desc_style(style.axis_desc_font())
@@ -141,15 +146,10 @@ where
         .context("Failed to draw mesh")?;
 
     chart
-        .draw_series(
-            data_points
-                .iter()
-                .enumerate()
-                .map(|(i, (_, y))| {
-                    let color = style.get_primary_color(i);
-                    Rectangle::new([(i, 0.0), (i + 1, *y)], color.filled())
-                }),
-        )
+        .draw_series(data_points.iter().enumerate().map(|(i, (_, y))| {
+            let color = style.get_primary_color(i);
+            Rectangle::new([(i, 0.0), (i + 1, *y)], color.filled())
+        }))
         .context("Failed to draw bar series")?
         .label(config.y.as_ref().unwrap())
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], style.get_primary_color(0)));

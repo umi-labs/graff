@@ -1,6 +1,6 @@
+use crate::spec::{AggregationType, FilterConfig, FilterValue, SortConfig};
 use anyhow::Result;
 use polars::prelude::*;
-use crate::spec::{FilterConfig, FilterValue, SortConfig, AggregationType};
 use std::collections::HashMap;
 
 pub struct TransformConfig {
@@ -12,10 +12,7 @@ pub struct TransformConfig {
     pub limit: Option<usize>,
 }
 
-pub fn apply_transforms(
-    lf: LazyFrame,
-    config: &TransformConfig,
-) -> Result<LazyFrame> {
+pub fn apply_transforms(lf: LazyFrame, config: &TransformConfig) -> Result<LazyFrame> {
     let mut result = lf;
 
     // Apply filters first
@@ -99,7 +96,7 @@ fn apply_filters(lf: LazyFrame, filter: &FilterConfig) -> Result<LazyFrame> {
 
 fn apply_grouping(lf: LazyFrame, group_col: &str, agg_type: &AggregationType) -> Result<LazyFrame> {
     let grouped = lf.group_by([col(group_col)]);
-    
+
     let result = match agg_type {
         AggregationType::Sum => grouped.agg([col("*").exclude([group_col]).sum()]),
         AggregationType::Count => grouped.agg([col("*").exclude([group_col]).count()]),
@@ -108,13 +105,13 @@ fn apply_grouping(lf: LazyFrame, group_col: &str, agg_type: &AggregationType) ->
         AggregationType::Min => grouped.agg([col("*").exclude([group_col]).min()]),
         AggregationType::Max => grouped.agg([col("*").exclude([group_col]).max()]),
     };
-    
+
     Ok(result)
 }
 
 fn apply_sorting(lf: LazyFrame, sort_configs: &[SortConfig]) -> Result<LazyFrame> {
     let mut result = lf;
-    
+
     for config in sort_configs {
         let ascending = config.ascending.unwrap_or(true);
         let options = SortOptions {
@@ -123,6 +120,6 @@ fn apply_sorting(lf: LazyFrame, sort_configs: &[SortConfig]) -> Result<LazyFrame
         };
         result = result.sort(&config.column, options);
     }
-    
+
     Ok(result)
 }

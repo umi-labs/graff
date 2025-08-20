@@ -1,5 +1,5 @@
-use plotters::prelude::*;
 use crate::spec::Theme;
+use plotters::prelude::*;
 
 /// Centralized styling configuration for all chart types
 pub struct ChartStyle {
@@ -58,16 +58,16 @@ impl ColorPalette {
         Self {
             // Colorblind-friendly palette based on ColorBrewer
             primary: vec![
-                RGBColor(31, 119, 180),   // Blue
-                RGBColor(255, 127, 14),   // Orange
-                RGBColor(44, 160, 44),    // Green
-                RGBColor(214, 39, 40),    // Red
-                RGBColor(148, 103, 189),  // Purple
-                RGBColor(140, 86, 75),    // Brown
-                RGBColor(227, 119, 194),  // Pink
-                RGBColor(127, 127, 127),  // Gray
-                RGBColor(188, 189, 34),   // Olive
-                RGBColor(23, 190, 207),   // Cyan
+                RGBColor(31, 119, 180),  // Blue
+                RGBColor(255, 127, 14),  // Orange
+                RGBColor(44, 160, 44),   // Green
+                RGBColor(214, 39, 40),   // Red
+                RGBColor(148, 103, 189), // Purple
+                RGBColor(140, 86, 75),   // Brown
+                RGBColor(227, 119, 194), // Pink
+                RGBColor(127, 127, 127), // Gray
+                RGBColor(188, 189, 34),  // Olive
+                RGBColor(23, 190, 207),  // Cyan
             ],
             text: TextColors::light(),
             background: BackgroundColors::light(),
@@ -78,16 +78,16 @@ impl ColorPalette {
         Self {
             // Same colorblind-friendly palette, adjusted for dark theme
             primary: vec![
-                RGBColor(114, 158, 206),  // Lighter blue
-                RGBColor(255, 158, 74),   // Lighter orange
-                RGBColor(103, 191, 92),   // Lighter green
-                RGBColor(237, 102, 93),   // Lighter red
-                RGBColor(173, 139, 201),  // Lighter purple
-                RGBColor(168, 120, 110),  // Lighter brown
-                RGBColor(237, 151, 202),  // Lighter pink
-                RGBColor(162, 162, 162),  // Lighter gray
-                RGBColor(205, 204, 93),   // Lighter olive
-                RGBColor(109, 204, 218),  // Lighter cyan
+                RGBColor(114, 158, 206), // Lighter blue
+                RGBColor(255, 158, 74),  // Lighter orange
+                RGBColor(103, 191, 92),  // Lighter green
+                RGBColor(237, 102, 93),  // Lighter red
+                RGBColor(173, 139, 201), // Lighter purple
+                RGBColor(168, 120, 110), // Lighter brown
+                RGBColor(237, 151, 202), // Lighter pink
+                RGBColor(162, 162, 162), // Lighter gray
+                RGBColor(205, 204, 93),  // Lighter olive
+                RGBColor(109, 204, 218), // Lighter cyan
             ],
             text: TextColors::dark(),
             background: BackgroundColors::dark(),
@@ -115,19 +115,19 @@ impl Default for TextColors {
 impl TextColors {
     fn light() -> Self {
         Self {
-            title: RGBColor(33, 37, 41),        // Dark gray for titles
-            axis_labels: RGBColor(80, 80, 80),   // Medium gray for axis
+            title: RGBColor(33, 37, 41),          // Dark gray for titles
+            axis_labels: RGBColor(80, 80, 80),    // Medium gray for axis
             data_labels: RGBColor(100, 100, 100), // Light gray for data
-            grid: RGBColor(222, 226, 230),       // Very light gray for grid
+            grid: RGBColor(222, 226, 230),        // Very light gray for grid
         }
     }
 
     fn dark() -> Self {
         Self {
-            title: RGBColor(248, 249, 250),      // Light gray for titles
+            title: RGBColor(248, 249, 250),       // Light gray for titles
             axis_labels: RGBColor(200, 200, 200), // Medium gray for axis
             data_labels: RGBColor(180, 180, 180), // Light gray for data
-            grid: RGBColor(73, 80, 87),          // Dark gray for grid
+            grid: RGBColor(73, 80, 87),           // Dark gray for grid
         }
     }
 }
@@ -155,8 +155,8 @@ impl BackgroundColors {
 
     fn dark() -> Self {
         Self {
-            chart: RGBColor(33, 37, 41),     // Dark gray
-            canvas: RGBColor(33, 37, 41),    // Dark gray
+            chart: RGBColor(33, 37, 41),  // Dark gray
+            canvas: RGBColor(33, 37, 41), // Dark gray
         }
     }
 }
@@ -330,14 +330,20 @@ impl ChartStyle {
 
     /// Create an axis description font style
     pub fn axis_desc_font(&self) -> TextStyle<'_> {
-        (self.typography.font_family, self.typography.sizes.axis_description)
+        (
+            self.typography.font_family,
+            self.typography.sizes.axis_description,
+        )
             .into_font()
             .color(&self.colors.text.axis_labels)
     }
 
     /// Create an axis label font style
     pub fn axis_label_font(&self) -> TextStyle<'_> {
-        (self.typography.font_family, self.typography.sizes.axis_labels)
+        (
+            self.typography.font_family,
+            self.typography.sizes.axis_labels,
+        )
             .into_font()
             .color(&self.colors.text.data_labels)
     }
