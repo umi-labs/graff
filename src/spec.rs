@@ -349,7 +349,7 @@ charts:
 
         let result = ChartSpec::from_yaml(yaml_content);
         assert!(result.is_ok());
-        
+
         let spec = result.unwrap();
         assert_eq!(spec.charts.len(), 1);
         assert_eq!(spec.charts[0].chart_type, ChartType::Line);
@@ -372,7 +372,7 @@ charts:
 
         let result = ChartSpec::from_json(json_content);
         assert!(result.is_ok());
-        
+
         let spec = result.unwrap();
         assert_eq!(spec.charts.len(), 1);
         assert_eq!(spec.charts[0].chart_type, ChartType::Line);
@@ -773,12 +773,24 @@ charts: []
     fn test_enum_serialization() {
         // Test ChartType serialization
         assert_eq!(serde_yaml::to_string(&ChartType::Line).unwrap(), "line\n");
-        assert_eq!(serde_yaml::to_string(&ChartType::Heatmap).unwrap(), "heatmap\n");
-        assert_eq!(serde_yaml::to_string(&ChartType::Funnel).unwrap(), "funnel\n");
+        assert_eq!(
+            serde_yaml::to_string(&ChartType::Heatmap).unwrap(),
+            "heatmap\n"
+        );
+        assert_eq!(
+            serde_yaml::to_string(&ChartType::Funnel).unwrap(),
+            "funnel\n"
+        );
 
         // Test AggregationType serialization
-        assert_eq!(serde_yaml::to_string(&AggregationType::Sum).unwrap(), "sum\n");
-        assert_eq!(serde_yaml::to_string(&AggregationType::Mean).unwrap(), "mean\n");
+        assert_eq!(
+            serde_yaml::to_string(&AggregationType::Sum).unwrap(),
+            "sum\n"
+        );
+        assert_eq!(
+            serde_yaml::to_string(&AggregationType::Mean).unwrap(),
+            "mean\n"
+        );
 
         // Test Theme serialization
         assert_eq!(serde_yaml::to_string(&Theme::Light).unwrap(), "light\n");

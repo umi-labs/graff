@@ -329,10 +329,10 @@ mod tests {
     fn test_load_csv_basic() {
         let csv_content = "date,users,channel\n2023-01-01,100,organic\n2023-01-02,150,direct";
         let temp_file = create_test_csv(csv_content);
-        
+
         let options = LoadOptions::default();
         let result = load_csv(temp_file.path(), &options);
-        
+
         assert!(result.is_ok());
         let lf = result.unwrap();
         let columns = get_column_names(&lf).unwrap();
@@ -341,12 +341,13 @@ mod tests {
 
     #[test]
     fn test_load_csv_with_yyyymmdd_format() {
-        let csv_content = "event_date,totalUsers,channel\n20231225,100,organic\n20231226,150,direct";
+        let csv_content =
+            "event_date,totalUsers,channel\n20231225,100,organic\n20231226,150,direct";
         let temp_file = create_test_csv(csv_content);
-        
+
         let options = LoadOptions::default();
         let result = load_csv(temp_file.path(), &options);
-        
+
         assert!(result.is_ok());
         let lf = result.unwrap();
         let columns = get_column_names(&lf).unwrap();
@@ -360,10 +361,10 @@ mod tests {
     fn test_load_csv_with_timestamps() {
         let csv_content = "timestamp,users,event_name\n1704067200000000,100,page_view\n1704153600000000,150,click";
         let temp_file = create_test_csv(csv_content);
-        
+
         let options = LoadOptions::default();
         let result = load_csv(temp_file.path(), &options);
-        
+
         assert!(result.is_ok());
         let lf = result.unwrap();
         let columns = get_column_names(&lf).unwrap();
@@ -375,13 +376,13 @@ mod tests {
     fn test_load_csv_no_header() {
         let csv_content = "2023-01-01,100,organic\n2023-01-02,150,direct";
         let temp_file = create_test_csv(csv_content);
-        
+
         let options = LoadOptions {
             has_header: false,
             ..Default::default()
         };
         let result = load_csv(temp_file.path(), &options);
-        
+
         assert!(result.is_ok());
         let lf = result.unwrap();
         let columns = get_column_names(&lf).unwrap();
@@ -426,7 +427,7 @@ mod tests {
             detect_format_from_string("12/25/2023").unwrap(),
             DateFormat::MmDdYyyy
         ));
-        
+
         // Invalid formats should fail
         assert!(detect_format_from_string("invalid-date").is_err());
         assert!(detect_format_from_string("2023/12/25").is_err());
@@ -436,10 +437,10 @@ mod tests {
     fn test_validate_columns_success() {
         let csv_content = "date,users,channel\n2023-01-01,100,organic";
         let temp_file = create_test_csv(csv_content);
-        
+
         let options = LoadOptions::default();
         let lf = load_csv(temp_file.path(), &options).unwrap();
-        
+
         let required = vec!["date".to_string(), "users".to_string()];
         let result = validate_columns(&lf, &required);
         assert!(result.is_ok());
@@ -449,14 +450,14 @@ mod tests {
     fn test_validate_columns_missing() {
         let csv_content = "date,users,channel\n2023-01-01,100,organic";
         let temp_file = create_test_csv(csv_content);
-        
+
         let options = LoadOptions::default();
         let lf = load_csv(temp_file.path(), &options).unwrap();
-        
+
         let required = vec!["missing_column".to_string()];
         let result = validate_columns(&lf, &required);
         assert!(result.is_err());
-        
+
         let error_msg = result.unwrap_err().to_string();
         assert!(error_msg.contains("Column 'missing_column' not found"));
         assert!(error_msg.contains("Available columns"));
@@ -504,10 +505,10 @@ mod tests {
     fn test_get_column_names() {
         let csv_content = "date,users,channel\n2023-01-01,100,organic";
         let temp_file = create_test_csv(csv_content);
-        
+
         let options = LoadOptions::default();
         let lf = load_csv(temp_file.path(), &options).unwrap();
-        
+
         let columns = get_column_names(&lf).unwrap();
         assert_eq!(columns, vec!["date", "users", "channel"]);
     }
@@ -540,14 +541,14 @@ mod tests {
     fn test_load_csv_malformed() {
         let csv_content = "date,users\n2023-01-01,100\ninvalid,row,with,too,many,columns";
         let temp_file = create_test_csv(csv_content);
-        
+
         let options = LoadOptions::default();
         let result = load_csv(temp_file.path(), &options);
-        
+
         // Polars might fail on malformed CSV, so we just check it doesn't panic
         // The actual behavior depends on Polars configuration
         match result {
-            Ok(_) => (), // Success case
+            Ok(_) => (),  // Success case
             Err(_) => (), // Error case is also acceptable
         }
     }
