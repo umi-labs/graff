@@ -36,10 +36,9 @@ where
 
     for i in 0..df.height().min(100) {
         // Limit for performance
-        if let (Ok(_x_val), Ok(_y_val), Ok(z_val)) = (x_col.get(i), y_col.get(i), z_col.get(i)) {
-            if let Some(z_value) = extract_numeric_value(z_val) {
-                data_points.push((i, i, z_value)); // Simple mapping for now
-            }
+        if let (Ok(_x_val), Ok(_y_val), Ok(z_val)) = (x_col.get(i), y_col.get(i), z_col.get(i))
+            && let Some(z_value) = extract_numeric_value(z_val) {
+            data_points.push((i, i, z_value)); // Simple mapping for now
         }
     }
 

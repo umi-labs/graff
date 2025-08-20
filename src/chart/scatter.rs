@@ -95,7 +95,7 @@ where
                 .map(|(x, y)| Circle::new((*x, *y), point_size, point_color.filled())),
         )
         .context("Failed to draw scatter points")?
-        .label(&format!(
+        .label(format!(
             "{} vs {}",
             config.y.as_ref().unwrap(),
             config.x.as_ref().unwrap()

@@ -80,7 +80,7 @@ where
     let line_color = style.get_primary_color(0);
 
     // Create area data points (filled down to zero)
-    let area_points: Vec<(f32, f32)> = data_points.iter().cloned().collect();
+    let area_points: Vec<(f32, f32)> = data_points.to_vec();
     let area_fill = RGBColor(line_color.0, line_color.1, line_color.2).mix(0.3);
 
     // Draw the filled area using polygon
@@ -166,7 +166,7 @@ where
     let line_color = style.get_primary_color(0);
 
     // Create area data points (filled down to zero)
-    let area_points: Vec<(f32, f32)> = data_points.iter().cloned().collect();
+    let area_points: Vec<(f32, f32)> = data_points.to_vec();
     let area_fill = RGBColor(line_color.0, line_color.1, line_color.2).mix(0.3);
 
     // Draw the filled area using polygon

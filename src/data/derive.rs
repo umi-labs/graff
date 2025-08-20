@@ -2,6 +2,7 @@ use anyhow::Result;
 use polars::prelude::*;
 use std::collections::HashMap;
 
+#[allow(dead_code)]
 pub fn apply_derived_columns(
     lf: LazyFrame,
     derivations: &HashMap<String, String>,
@@ -16,6 +17,7 @@ pub fn apply_derived_columns(
     Ok(result)
 }
 
+#[allow(dead_code)]
 fn parse_derive_expression(expr: &str) -> Result<Expr> {
     match expr {
         s if s.starts_with("to_week(") => {
@@ -45,12 +47,14 @@ fn parse_derive_expression(expr: &str) -> Result<Expr> {
     }
 }
 
+#[allow(dead_code)]
 fn extract_column_name(expr: &str) -> Result<&str> {
     let start = expr.find('(').unwrap() + 1;
     let end = expr.rfind(')').unwrap();
     Ok(&expr[start..end])
 }
 
+#[allow(dead_code)]
 fn extract_two_column_names(expr: &str) -> Result<(&str, &str)> {
     let start = expr.find('(').unwrap() + 1;
     let end = expr.rfind(')').unwrap();
@@ -65,26 +69,31 @@ fn extract_two_column_names(expr: &str) -> Result<(&str, &str)> {
 }
 
 /// Convert date to Monday week start
+#[allow(dead_code)]
 fn to_week_expr(col_name: &str) -> Expr {
     col(col_name).dt().truncate(lit("1w"), "0".to_string())
 }
 
 /// Convert date to first of month
+#[allow(dead_code)]
 fn to_month_expr(col_name: &str) -> Expr {
     col(col_name).dt().truncate(lit("1mo"), "0".to_string())
 }
 
 /// Extract hour from timestamp (0-23)
+#[allow(dead_code)]
 fn to_hour_expr(col_name: &str) -> Expr {
     col(col_name).dt().hour()
 }
 
 /// Get day of week (0=Monday, 6=Sunday)
+#[allow(dead_code)]
 fn weekday_expr(col_name: &str) -> Expr {
     col(col_name).dt().weekday()
 }
 
 /// Combine source and medium as "source / medium"
+#[allow(dead_code)]
 fn source_medium_expr(source_col: &str, medium_col: &str) -> Expr {
     // For now, use format! to create a simple concatenation
     // TODO: Use proper polars string concatenation when available

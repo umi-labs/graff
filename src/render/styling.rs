@@ -6,7 +6,9 @@ pub struct ChartStyle {
     pub colors: ColorPalette,
     pub typography: Typography,
     pub layout: Layout,
+    #[allow(dead_code)]
     pub spacing: Spacing,
+    #[allow(dead_code)]
     pub theme: Theme,
 }
 
@@ -103,6 +105,7 @@ pub struct TextColors {
     /// Data point labels and legends
     pub data_labels: RGBColor,
     /// Grid and mesh lines
+    #[allow(dead_code)]
     pub grid: RGBColor,
 }
 
@@ -186,6 +189,7 @@ pub struct FontSizes {
     /// Axis tick labels (numbers, categories)
     pub axis_labels: u32,
     /// Legend text
+    #[allow(dead_code)]
     pub legend: u32,
 }
 
@@ -201,6 +205,7 @@ impl Default for FontSizes {
 }
 
 /// Layout and sizing configuration
+#[derive(Default)]
 pub struct Layout {
     /// Chart margins
     pub margins: Margins,
@@ -210,20 +215,11 @@ pub struct Layout {
     pub elements: ElementSizes,
 }
 
-impl Default for Layout {
-    fn default() -> Self {
-        Self {
-            margins: Margins::default(),
-            areas: AreaSizes::default(),
-            elements: ElementSizes::default(),
-        }
-    }
-}
-
 pub struct Margins {
     /// General margin around chart
     pub chart: u32,
     /// Extra margin for complex charts
+    #[allow(dead_code)]
     pub complex: u32,
 }
 
@@ -242,6 +238,7 @@ pub struct AreaSizes {
     /// Y-axis label area width
     pub y_label_area: u32,
     /// Legend area size
+    #[allow(dead_code)]
     pub legend_area: u32,
 }
 
@@ -259,8 +256,10 @@ pub struct ElementSizes {
     /// Line chart point size
     pub line_points: u32,
     /// Line width for line charts
+    #[allow(dead_code)]
     pub line_width: u32,
     /// Bar spacing factor
+    #[allow(dead_code)]
     pub bar_spacing: f32,
 }
 
@@ -277,10 +276,13 @@ impl Default for ElementSizes {
 /// Spacing and padding configuration
 pub struct Spacing {
     /// Padding between chart elements
+    #[allow(dead_code)]
     pub element_padding: u32,
     /// Spacing between data series
+    #[allow(dead_code)]
     pub series_spacing: u32,
     /// Padding for text elements
+    #[allow(dead_code)]
     pub text_padding: u32,
 }
 
@@ -349,6 +351,7 @@ impl ChartStyle {
     }
 
     /// Create a legend font style
+    #[allow(dead_code)]
     pub fn legend_font(&self) -> TextStyle<'_> {
         (self.typography.font_family, self.typography.sizes.legend)
             .into_font()

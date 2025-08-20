@@ -23,7 +23,7 @@ where
         .ok_or_else(|| anyhow::anyhow!("Stacked bar charts require a 'group_by' field"))?;
 
     // Check if we have the original x column or if we need to use the group column
-    if let Ok(_) = df.column(config.x.as_ref().unwrap()) {
+    if df.column(config.x.as_ref().unwrap()).is_ok() {
         render_stacked_bar_with_x(df, config, root, title, group_by_col, &style)
     } else {
         render_stacked_bar_grouped(df, config, root, title, group_by_col, &style)

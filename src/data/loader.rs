@@ -3,6 +3,7 @@ use polars::prelude::*;
 use std::path::Path;
 
 pub struct LoadOptions {
+    #[allow(dead_code)]
     pub streaming: bool,
     pub infer_schema_length: Option<usize>,
     pub has_header: bool,
@@ -98,10 +99,12 @@ enum DateFormat {
     IsoDateTime, // YYYY-MM-DD HH:MM:SS
     YyyyMmDd,    // YYYYMMDD
     MmDdYyyy,    // MM/DD/YYYY
+    #[allow(dead_code)]
     DdMmYyyy,    // DD/MM/YYYY
 }
 
 impl DateFormat {
+    #[allow(dead_code)]
     fn to_polars_format(&self) -> &'static str {
         match self {
             DateFormat::Iso => "%Y-%m-%d",
@@ -283,6 +286,7 @@ fn levenshtein_distance(s1: &str, s2: &str) -> usize {
     let len2 = s2.len();
     let mut matrix = vec![vec![0; len2 + 1]; len1 + 1];
 
+    #[allow(clippy::needless_range_loop)]
     for i in 0..=len1 {
         matrix[i][0] = i;
     }

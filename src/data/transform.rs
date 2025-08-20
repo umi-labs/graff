@@ -3,6 +3,7 @@ use anyhow::Result;
 use polars::prelude::*;
 use std::collections::HashMap;
 
+#[allow(dead_code)]
 pub struct TransformConfig {
     pub filter: Option<FilterConfig>,
     pub derive: Option<HashMap<String, String>>,
@@ -12,6 +13,7 @@ pub struct TransformConfig {
     pub limit: Option<usize>,
 }
 
+#[allow(dead_code)]
 pub fn apply_transforms(lf: LazyFrame, config: &TransformConfig) -> Result<LazyFrame> {
     let mut result = lf;
 
@@ -26,10 +28,9 @@ pub fn apply_transforms(lf: LazyFrame, config: &TransformConfig) -> Result<LazyF
     }
 
     // Apply grouping and aggregation
-    if let Some(group_col) = &config.group_by {
-        if let Some(agg_type) = &config.agg {
-            result = apply_grouping(result, group_col, agg_type)?;
-        }
+    if let Some(group_col) = &config.group_by
+        && let Some(agg_type) = &config.agg {
+        result = apply_grouping(result, group_col, agg_type)?;
     }
 
     // Apply sorting
@@ -45,6 +46,7 @@ pub fn apply_transforms(lf: LazyFrame, config: &TransformConfig) -> Result<LazyF
     Ok(result)
 }
 
+#[allow(dead_code)]
 fn apply_filters(lf: LazyFrame, filter: &FilterConfig) -> Result<LazyFrame> {
     let mut result = lf;
 
@@ -94,6 +96,7 @@ fn apply_filters(lf: LazyFrame, filter: &FilterConfig) -> Result<LazyFrame> {
     Ok(result)
 }
 
+#[allow(dead_code)]
 fn apply_grouping(lf: LazyFrame, group_col: &str, agg_type: &AggregationType) -> Result<LazyFrame> {
     let grouped = lf.group_by([col(group_col)]);
 
@@ -109,6 +112,7 @@ fn apply_grouping(lf: LazyFrame, group_col: &str, agg_type: &AggregationType) ->
     Ok(result)
 }
 
+#[allow(dead_code)]
 fn apply_sorting(lf: LazyFrame, sort_configs: &[SortConfig]) -> Result<LazyFrame> {
     let mut result = lf;
 

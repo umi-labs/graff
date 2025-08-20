@@ -29,11 +29,10 @@ where
     // Extract values for each step
     let mut step_values = Vec::new();
     for (step_idx, step) in steps.iter().enumerate() {
-        if step_idx < df.height() {
-            if let Ok(value) = values_col_data.get(step_idx) {
-                let numeric_value = extract_numeric_value(value).unwrap_or(0.0);
-                step_values.push((step.clone(), numeric_value));
-            }
+        if step_idx < df.height()
+            && let Ok(value) = values_col_data.get(step_idx) {
+            let numeric_value = extract_numeric_value(value).unwrap_or(0.0);
+            step_values.push((step.clone(), numeric_value));
         }
     }
 

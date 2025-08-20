@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[command(name = "graff")]
@@ -1193,9 +1193,9 @@ fn render_batch_charts(args: RenderArgs) -> Result<()> {
 }
 
 fn process_single_chart(
-    data_path: &PathBuf,
+    data_path: &Path,
     chart_config: &crate::spec::ChartConfig,
-    output_path: &PathBuf,
+    output_path: &Path,
 ) -> Result<()> {
     // Validate the chart config
     chart_config.validate()?;

@@ -207,36 +207,32 @@ impl ChartConfig {
         }
 
         // Validate dimensions
-        if let Some(width) = self.width {
-            if width < 100 || width > 10000 {
-                anyhow::bail!(
-                    "Chart width must be between 100 and 10000 pixels, got {}",
-                    width
-                );
-            }
+        if let Some(width) = self.width
+            && !(100..=10000).contains(&width) {
+            anyhow::bail!(
+                "Chart width must be between 100 and 10000 pixels, got {}",
+                width
+            );
         }
 
-        if let Some(height) = self.height {
-            if height < 100 || height > 10000 {
-                anyhow::bail!(
-                    "Chart height must be between 100 and 10000 pixels, got {}",
-                    height
-                );
-            }
+        if let Some(height) = self.height
+            && !(100..=10000).contains(&height) {
+            anyhow::bail!(
+                "Chart height must be between 100 and 10000 pixels, got {}",
+                height
+            );
         }
 
         // Validate scale
-        if let Some(scale) = self.scale {
-            if scale <= 0.0 || scale > 10.0 {
-                anyhow::bail!("Chart scale must be between 0.1 and 10.0, got {}", scale);
-            }
+        if let Some(scale) = self.scale
+            && (scale <= 0.0 || scale > 10.0) {
+            anyhow::bail!("Chart scale must be between 0.1 and 10.0, got {}", scale);
         }
 
         // Validate bins for heatmaps
-        if let Some(bins) = self.bins {
-            if bins < 2 || bins > 100 {
-                anyhow::bail!("Heatmap bins must be between 2 and 100, got {}", bins);
-            }
+        if let Some(bins) = self.bins
+            && !(2..=100).contains(&bins) {
+            anyhow::bail!("Heatmap bins must be between 2 and 100, got {}", bins);
         }
 
         // Validate filter expressions
@@ -249,8 +245,8 @@ impl ChartConfig {
 
     fn validate_filter(&self, filter: &FilterConfig) -> anyhow::Result<()> {
         // Validate that we have at least one filter condition
-        let has_include = filter.include.as_ref().map_or(false, |f| !f.is_empty());
-        let has_exclude = filter.exclude.as_ref().map_or(false, |f| !f.is_empty());
+        let has_include = filter.include.as_ref().is_some_and(|f| !f.is_empty());
+        let has_exclude = filter.exclude.as_ref().is_some_and(|f| !f.is_empty());
         let has_expression = filter.expression.is_some();
 
         if !has_include && !has_exclude && !has_expression {
@@ -322,10 +318,9 @@ impl ChartConfig {
             }
         }
 
-        if let Some(expression) = &filter.expression {
-            if expression.trim().is_empty() {
-                anyhow::bail!("Filter expression cannot be empty");
-            }
+        if let Some(expression) = &filter.expression
+            && expression.trim().is_empty() {
+            anyhow::bail!("Filter expression cannot be empty");
         }
 
         Ok(())

@@ -290,6 +290,7 @@ fn get_legend_items(df: &DataFrame, config: &ChartConfig) -> Result<Vec<String>>
     Ok(items)
 }
 
+#[allow(dead_code)]
 pub fn generate_output_filename(
     config: &ChartConfig,
     output_dir: &Path,
