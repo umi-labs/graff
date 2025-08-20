@@ -1,6 +1,6 @@
 [package]
 name = "graff"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 authors = ["Isaac SJ"]
 description = "Fast, deterministic Rust CLI for converting CSV data into beautiful PNG/SVG/PDF charts"
