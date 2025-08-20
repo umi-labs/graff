@@ -98,6 +98,82 @@ graff retention \
 
 For complex workflows, use YAML/JSON spec files to define multiple charts:
 
+## Development & Release
+
+### Prerequisites
+
+```bash
+# Install cargo-dist for releases
+cargo install cargo-dist
+
+# Install development dependencies
+cargo install cargo-watch  # For development
+cargo install cargo-audit  # For security checks
+```
+
+### Development Workflow
+
+```bash
+# Run tests
+cargo test
+
+# Check formatting
+cargo fmt --all -- --check
+
+# Run lints
+cargo clippy --release -- -D warnings
+
+# Build release
+cargo build --release
+```
+
+### Release Process
+
+Graff uses automated releases with cargo dist. To create a new release:
+
+```bash
+# Automatic version bumping (recommended)
+./scripts/release.sh --patch          # 0.1.0 -> 0.1.1
+./scripts/release.sh --minor          # 0.1.0 -> 0.2.0
+./scripts/release.sh --major          # 0.1.0 -> 1.0.0
+
+# Manual version specification
+./scripts/release.sh 1.0.0
+
+# Dry run to see what would happen
+./scripts/release.sh --dry-run --minor
+
+# Skip tests (for hotfixes)
+./scripts/release.sh --patch --skip-tests
+```
+
+The release script will:
+1. ✅ Auto-bump version (if using --patch/--minor/--major)
+2. ✅ Run all tests and lints
+3. ✅ Build the release version
+4. ✅ Update version in Cargo.toml
+5. ✅ Create git tag and push to GitHub
+6. ✅ Trigger cargo dist for distribution
+
+For detailed release instructions, see [docs/release-guide.md](docs/release-guide.md).
+
+### Examples Generation
+
+Generate comprehensive chart examples and documentation:
+
+```bash
+# Generate all examples
+./scripts/generate-examples.sh
+
+# Generate documentation
+./scripts/generate-docs.sh
+```
+
+This creates:
+- Chart examples in `charts/` directory
+- Comprehensive documentation in `docs/examples.md`
+- Both light and dark theme variations
+
 ```yaml
 # charts.yaml
 data:

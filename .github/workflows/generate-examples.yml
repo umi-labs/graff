@@ -2,9 +2,9 @@ name: Generate Chart Examples
 
 on:
   push:
-    branches: [ main ]
+    branches: [ prod ]
   pull_request:
-    branches: [ main ]
+    branches: [ prod ]
   workflow_dispatch:
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
         ./scripts/generate-docs.sh
         
     - name: Commit and push changes
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/prod'
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"

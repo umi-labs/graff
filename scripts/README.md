@@ -45,6 +45,51 @@ Generates comprehensive documentation showcasing all chart examples.
 ./scripts/generate-docs.sh
 ```
 
+### `release.sh`
+
+Comprehensive release automation script for cargo dist integration.
+
+**Features:**
+- Runs tests, lints, and builds
+- Validates version format and git status
+- Updates version in Cargo.toml
+- Creates git tags and pushes to GitHub
+- Integrates with cargo dist for distribution
+- Supports dry-run mode for testing
+
+**Usage:**
+```bash
+# Automatic version bumping (recommended)
+./scripts/release.sh --patch          # 0.1.0 -> 0.1.1
+./scripts/release.sh --minor          # 0.1.0 -> 0.2.0
+./scripts/release.sh --major          # 0.1.0 -> 1.0.0
+
+# Manual version specification
+./scripts/release.sh 1.0.0
+
+# Skip tests
+./scripts/release.sh --patch --skip-tests
+
+# Dry run to see what would happen
+./scripts/release.sh --dry-run --minor
+
+# Skip multiple steps
+./scripts/release.sh --minor --skip-tests --skip-lints
+```
+
+**Version Options:**
+- `--patch`: Bump patch version (1.0.0 -> 1.0.1)
+- `--minor`: Bump minor version (1.0.0 -> 1.1.0)
+- `--major`: Bump major version (1.0.0 -> 2.0.0)
+
+**Other Options:**
+- `--skip-tests`: Skip running tests
+- `--skip-lints`: Skip running lints
+- `--skip-build`: Skip building release
+- `--skip-dist`: Skip cargo dist build
+- `--dry-run`: Show what would be done without making changes
+- `--help`: Show help message
+
 ## GitHub Workflow
 
 The `.github/workflows/generate-examples.yml` workflow automatically:
