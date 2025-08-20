@@ -50,8 +50,8 @@ check_git_status() {
 # Function to check if we're on the right branch
 check_branch() {
     local current_branch=$(git branch --show-current)
-    if [[ "$current_branch" != "main" && "$current_branch" != "master" ]]; then
-        print_warning "You're not on main/master branch. Current branch: $current_branch"
+    if [[ "$current_branch" != "prod" ]]; then
+        print_warning "You're not on prod branch. Current branch: $current_branch"
         read -p "Do you want to continue? (y/N): " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then

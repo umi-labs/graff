@@ -125,7 +125,7 @@ Before releasing, ensure:
 - [ ] No lint warnings (`cargo clippy --release -- -D warnings`)
 - [ ] Documentation is up-to-date
 - [ ] Changelog is updated
-- [ ] You're on the main branch
+- [ ] You're on the prod branch
 - [ ] No uncommitted changes
 
 ### 2. Release Steps
@@ -215,7 +215,7 @@ For continuous deployment:
 
 1. **Development**: Use feature branches and pull requests
 2. **Testing**: Automated tests on every commit
-3. **Release**: Manual trigger with the release script
+3. **Release**: Manual trigger with the release script on prod branch
 4. **Deployment**: Automatic deployment from GitHub releases
 
 ## Best Practices
