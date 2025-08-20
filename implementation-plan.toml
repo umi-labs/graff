@@ -1,0 +1,764 @@
+# Graff Implementation Plan
+# A comprehensive roadmap for building the GA4/BigQuery CSV to chart CLI tool
+
+[project]
+name = "graff"
+description = "Fast, deterministic Rust CLI for converting GA4/BigQuery CSV exports into PNG/SVG/PDF charts"
+version = "0.1.0"
+target_completion = "2024-02-15"
+
+[goals]
+primary = [
+    "Fast CSV processing with Polars LazyFrame",
+    "Multiple chart types (line, area, bar, heatmap, funnel, retention)",
+    "GA4/BigQuery format auto-detection",
+    "Batch processing via YAML/JSON specs",
+    "Deterministic, reproducible outputs",
+    "CI/CD friendly (headless, clear errors, exit codes)"
+]
+
+secondary = [
+    "Multiple output formats (PNG, SVG, PDF)",
+    "Colorblind-friendly themes",
+    "Memory-efficient streaming for large files",
+    "Parallel chart rendering",
+    "Comprehensive error messages with suggestions"
+]
+
+nice_to_have = [
+    "Retina/high-DPI support",
+    "Custom color palettes",
+    "Vega-Lite import (experimental)",
+    "Interactive HTML output",
+    "Real-time data source connectors"
+]
+
+# =============================================================================
+# PHASE 1: FOUNDATION & CORE INFRASTRUCTURE
+# =============================================================================
+
+[phases.phase1]
+name = "Foundation & Core Infrastructure"
+duration_weeks = 2
+description = "Set up project structure, CLI framework, and basic data loading"
+
+[phases.phase1.milestones]
+
+[phases.phase1.milestones.m1_1]
+name = "Project Scaffold & Dependencies"
+duration_days = 2
+description = "Initialize Rust project with all required dependencies"
+deliverables = [
+    "Cargo.toml with all dependencies",
+    "Basic project structure (/src, /tests, /docs)",
+    "CI/CD setup (GitHub Actions)",
+    "License and contributing guidelines"
+]
+dependencies = [
+    "clap = { version = '4.0', features = ['derive'] }",
+    "polars = { version = '0.35', features = ['lazy', 'csv', 'dtype-date', 'dtype-datetime', 'temporal'] }",
+    "plotters = '0.3'",
+    "plotters-bitmap = '0.3'", 
+    "plotters-svg = '0.3'",
+    "plotters-pdf = '0.3'",
+    "serde = { version = '1.0', features = ['derive'] }",
+    "serde_yaml = '0.9'",
+    "serde_json = '1.0'",
+    "anyhow = '1.0'",
+    "thiserror = '1.0'",
+    "rayon = '1.7'",
+    "chrono = { version = '0.4', features = ['serde'] }",
+    "regex = '1.0'",
+    "strum = { version = '0.25', features = ['derive'] }",
+    "insta = '1.34'"
+]
+
+[phases.phase1.milestones.m1_2]
+name = "CLI Framework & Argument Parsing"
+duration_days = 3
+description = "Implement clap-based CLI with all subcommands and validation"
+deliverables = [
+    "src/cli.rs - Complete CLI structure",
+    "All subcommands defined: line, area, bar, heatmap, funnel, retention, render",
+    "Global options: --theme, --scale, --format, --verbose",
+    "Argument validation with helpful error messages",
+    "CLI help text with examples"
+]
+acceptance_criteria = [
+    "graff --help shows all commands",
+    "graff line --help shows all line chart options",
+    "Invalid arguments show suggestions",
+    "Required arguments are validated"
+]
+
+[phases.phase1.milestones.m1_3]
+name = "Spec File Parser & Validation"
+duration_days = 3
+description = "YAML/JSON spec parsing with comprehensive validation"
+deliverables = [
+    "src/spec.rs - Serde structs for spec format",
+    "YAML and JSON parsing support",
+    "Schema validation per chart type",
+    "Detailed error messages with field paths",
+    "Example spec files in tests/fixtures/"
+]
+acceptance_criteria = [
+    "Valid spec files parse without errors",
+    "Invalid specs show specific field errors",
+    "Missing required fields are caught",
+    "Chart type validation works"
+]
+
+[phases.phase1.milestones.m1_4]
+name = "CSV Data Loading & Schema Detection"
+duration_days = 4
+description = "Polars-based CSV loading with GA4 format auto-detection"
+deliverables = [
+    "src/data/loader.rs - CSV loading with Polars LazyFrame",
+    "Auto-detection for GA4 date formats (YYYYMMDD, ISO)",
+    "Schema inference with fallback to string types",
+    "Column validation with typo suggestions",
+    "Support for large file streaming"
+]
+acceptance_criteria = [
+    "GA4 event_date (20231225) parsed correctly",
+    "ISO dates (2023-12-25) parsed correctly",
+    "Large CSV files (>100MB) load without memory issues",
+    "Missing columns show 'Did you mean?' suggestions",
+    "Schema inference handles mixed data types"
+]
+
+# =============================================================================
+# PHASE 2: DATA TRANSFORMATION PIPELINE
+# =============================================================================
+
+[phases.phase2]
+name = "Data Transformation Pipeline"
+duration_weeks = 2
+description = "Implement data filtering, grouping, aggregation, and derived columns"
+
+[phases.phase2.milestones]
+
+[phases.phase2.milestones.m2_1]
+name = "Derived Column Functions"
+duration_days = 4
+description = "Common GA4/BigQuery transformation functions"
+deliverables = [
+    "src/data/derive.rs - Derived column implementations",
+    "Date functions: to_week(), to_month(), to_hour(), weekday()",
+    "String functions: source_medium(), concat(), upper(), lower()",
+    "Numeric functions: round(), abs(), log(), sqrt()",
+    "Integration with Polars expressions"
+]
+acceptance_criteria = [
+    "to_week('2023-12-25') returns '2023-12-25' (Monday)",
+    "source_medium('google', 'organic') returns 'google / organic'",
+    "Functions work within Polars LazyFrame pipeline",
+    "Error handling for invalid inputs"
+]
+
+[phases.phase2.milestones.m2_2]
+name = "Filter & Transform Pipeline"
+duration_days = 4
+description = "Complete data transformation pipeline with filtering and aggregation"
+deliverables = [
+    "src/data/transform.rs - Transform pipeline implementation",
+    "Include/exclude filtering with list and expression support",
+    "Group by operations with multiple columns",
+    "Aggregation functions: sum, count, mean, median, min, max",
+    "Sorting and limiting operations"
+]
+acceptance_criteria = [
+    "Filter expressions like 'channel IN (\"Organic\", \"Direct\")' work",
+    "Group by channel + date produces correct aggregations",
+    "Sort by multiple columns maintains deterministic output",
+    "Limit operations don't affect aggregation accuracy"
+]
+
+[phases.phase2.milestones.m2_3]
+name = "Integration Tests & Fixtures"
+duration_days = 2
+description = "Test data pipeline with realistic GA4 datasets"
+deliverables = [
+    "tests/fixtures/ - Sample GA4 CSV files",
+    "ga4_users.csv, ga4_events.csv, hourly_sessions.csv",
+    "Integration tests for complete pipeline",
+    "Golden tests comparing Polars outputs",
+    "Performance benchmarks for large datasets"
+]
+acceptance_criteria = [
+    "All fixture files load and transform correctly",
+    "Pipeline handles 1M+ row datasets efficiently",
+    "Output is deterministic across runs",
+    "Memory usage stays below 1GB for large files"
+]
+
+# =============================================================================
+# PHASE 3: CHART RENDERING ENGINE
+# =============================================================================
+
+[phases.phase3]
+name = "Chart Rendering Engine"
+duration_weeks = 3
+description = "Implement chart renderers using Plotters with themes and styling"
+
+[phases.phase3.milestones]
+
+[phases.phase3.milestones.m3_1]
+name = "Renderer Trait & Canvas Management"
+duration_days = 3
+description = "Common rendering interface and output format support"
+deliverables = [
+    "src/render/mod.rs - ChartRenderer trait definition",
+    "Canvas creation for PNG, SVG, PDF formats",
+    "Theme system (light/dark) with color management",
+    "Error handling for rendering failures",
+    "Output file naming conventions"
+]
+acceptance_criteria = [
+    "All output formats (PNG, SVG, PDF) create valid files",
+    "Light and dark themes render correctly",
+    "File naming is deterministic and descriptive",
+    "Rendering errors provide actionable messages"
+]
+
+[phases.phase3.milestones.m3_2]
+name = "Line & Area Chart Implementation"
+duration_days = 4
+description = "Time series charts with multiple series support"
+deliverables = [
+    "src/chart/line.rs - Line chart renderer",
+    "src/chart/area.rs - Area chart renderer (stacked/normalized)",
+    "Time-aware x-axis formatting",
+    "Multiple series with automatic color assignment",
+    "Legend and title rendering"
+]
+acceptance_criteria = [
+    "Single series line charts render correctly",
+    "Multi-series charts use distinct colors",
+    "Date axes format appropriately (daily/weekly/monthly)",
+    "Legends show/hide based on series count",
+    "Area charts support stacking and normalization"
+]
+
+[phases.phase3.milestones.m3_3]
+name = "Bar Chart Implementation"
+duration_days = 4
+description = "Categorical charts with grouping and stacking"
+deliverables = [
+    "src/chart/bar.rs - Bar chart renderer",
+    "Grouped and stacked bar support",
+    "Horizontal orientation option",
+    "Category axis with proper spacing",
+    "Value axis with appropriate scaling"
+]
+acceptance_criteria = [
+    "Grouped bars display categories clearly",
+    "Stacked bars show composition correctly",
+    "Horizontal bars work for long category names",
+    "Axis labels are readable and well-spaced",
+    "Colors are consistent across chart types"
+]
+
+[phases.phase3.milestones.m3_4]
+name = "Color Palette & Theme System"
+duration_days = 2
+description = "Colorblind-friendly palettes and theming"
+deliverables = [
+    "src/chart/palette.rs - Color palette management",
+    "Colorblind-safe default palette (8+ colors)",
+    "Light/dark theme variants",
+    "Automatic color assignment for series",
+    "Custom color override support"
+]
+acceptance_criteria = [
+    "Default palette passes colorblind accessibility tests",
+    "Dark theme provides good contrast",
+    "Colors cycle appropriately for many series",
+    "Manual color specification works"
+]
+
+# =============================================================================
+# PHASE 4: SPECIALIZED CHART TYPES
+# =============================================================================
+
+[phases.phase4]
+name = "Specialized Chart Types"
+duration_weeks = 2
+description = "Implement heatmap, funnel, and retention matrix charts"
+
+[phases.phase4.milestones]
+
+[phases.phase4.milestones.m4_1]
+name = "Heatmap Implementation"
+duration_days = 4
+description = "2D value visualization with color mapping"
+deliverables = [
+    "src/chart/heatmap.rs - Heatmap renderer",
+    "Discrete x/y axis support (hour, weekday)",
+    "Continuous value mapping with color scale",
+    "Multiple color schemes (viridis, plasma, blues)",
+    "Color legend with value ranges"
+]
+acceptance_criteria = [
+    "Hour vs weekday heatmaps display correctly",
+    "Color scale represents data range accurately",
+    "Legend shows value-to-color mapping",
+    "Missing data cells handled appropriately"
+]
+
+[phases.phase4.milestones.m4_2]
+name = "Funnel Chart Implementation"
+duration_days = 3
+description = "Sequential step conversion visualization"
+deliverables = [
+    "src/chart/funnel.rs - Funnel chart renderer",
+    "Step-by-step conversion flow",
+    "Conversion rate calculations and display",
+    "Proportional step sizing",
+    "Drop-off highlighting"
+]
+acceptance_criteria = [
+    "E-commerce funnel (page_view → purchase) renders correctly",
+    "Conversion rates between steps are accurate",
+    "Visual proportions reflect actual data",
+    "Step labels are clear and readable"
+]
+
+[phases.phase4.milestones.m4_3]
+name = "Retention Matrix Implementation"
+duration_days = 3
+description = "Cohort retention analysis visualization"
+deliverables = [
+    "src/chart/retention.rs - Retention matrix renderer",
+    "Cohort date vs period number matrix",
+    "Percentage and absolute value modes",
+    "Color coding for retention rates",
+    "Cohort size indicators"
+]
+acceptance_criteria = [
+    "Weekly retention matrix displays correctly",
+    "Percentage mode shows retention rates",
+    "Color intensity reflects retention strength",
+    "Cohort labels are properly formatted"
+]
+
+# =============================================================================
+# PHASE 5: BATCH PROCESSING & OPTIMIZATION
+# =============================================================================
+
+[phases.phase5]
+name = "Batch Processing & Optimization"
+duration_weeks = 2
+description = "Parallel rendering, performance optimization, and advanced features"
+
+[phases.phase5.milestones]
+
+[phases.phase5.milestones.m5_1]
+name = "Batch Rendering System"
+duration_days = 4
+description = "Parallel chart generation from spec files"
+deliverables = [
+    "Parallel chart rendering with rayon",
+    "Shared data loading for multiple charts",
+    "Progress reporting for batch operations",
+    "Error aggregation and reporting",
+    "Resource management and cleanup"
+]
+acceptance_criteria = [
+    "Spec with 10 charts renders in parallel",
+    "Data is loaded once and shared efficiently",
+    "Failed charts don't stop other renders",
+    "Progress is visible for long operations"
+]
+
+[phases.phase5.milestones.m5_2]
+name = "Performance Optimization"
+duration_days = 3
+description = "Memory efficiency and large dataset handling"
+deliverables = [
+    "Streaming mode for large CSV files",
+    "Memory usage optimization",
+    "Query plan optimization with Polars",
+    "Benchmark suite for performance testing",
+    "Memory profiling and leak detection"
+]
+acceptance_criteria = [
+    "1GB+ CSV files process without memory issues",
+    "Streaming mode maintains deterministic output",
+    "Memory usage scales linearly with data size",
+    "Performance benchmarks show expected scaling"
+]
+
+[phases.phase5.milestones.m5_3]
+name = "Advanced Features"
+duration_days = 3
+description = "Scale factors, custom formatting, and quality-of-life improvements"
+deliverables = [
+    "Retina/high-DPI support with --scale option",
+    "Custom canvas dimensions",
+    "Advanced axis formatting options",
+    "Output file organization and naming",
+    "Verbose logging and debug modes"
+]
+acceptance_criteria = [
+    "--scale 2.0 produces high-resolution output",
+    "Custom dimensions maintain aspect ratios",
+    "Debug mode shows processing steps",
+    "File organization is logical and consistent"
+]
+
+# =============================================================================
+# PHASE 6: ERROR HANDLING & USER EXPERIENCE
+# =============================================================================
+
+[phases.phase6]
+name = "Error Handling & User Experience"
+duration_weeks = 1
+description = "Comprehensive error handling, helpful messages, and CLI polish"
+
+[phases.phase6.milestones]
+
+[phases.phase6.milestones.m6_1]
+name = "Error System Implementation"
+duration_days = 3
+description = "Comprehensive error handling with actionable messages"
+deliverables = [
+    "Custom error types with thiserror",
+    "Column name suggestions for typos",
+    "Validation errors with field context",
+    "File path resolution errors",
+    "Data format detection errors"
+]
+acceptance_criteria = [
+    "Typo 'totalUser' suggests 'totalUsers'",
+    "Invalid spec fields show exact location",
+    "Missing files show clear error messages",
+    "Data parsing errors include row numbers"
+]
+
+[phases.phase6.milestones.m6_2]
+name = "CLI Polish & Help System"
+duration_days = 2
+description = "Professional CLI experience with comprehensive help"
+deliverables = [
+    "Detailed help text for all commands",
+    "Usage examples in --help output",
+    "Command completion support",
+    "Exit code documentation",
+    "Version information and build details"
+]
+acceptance_criteria = [
+    "Help text includes real-world examples",
+    "All options are clearly documented",
+    "Exit codes match documented behavior",
+    "Version shows build information"
+]
+
+# =============================================================================
+# PHASE 7: TESTING & DOCUMENTATION
+# =============================================================================
+
+[phases.phase7]
+name = "Testing & Documentation"
+duration_weeks = 2
+description = "Comprehensive testing suite and user documentation"
+
+[phases.phase7.milestones]
+
+[phases.phase7.milestones.m7_1]
+name = "Test Suite Implementation"
+duration_days = 5
+description = "Unit, integration, and snapshot tests"
+deliverables = [
+    "Unit tests for all modules",
+    "Integration tests for CLI commands",
+    "Snapshot tests for chart outputs (insta)",
+    "Performance regression tests",
+    "Cross-platform compatibility tests"
+]
+acceptance_criteria = [
+    "Test coverage > 90% for core modules",
+    "All CLI commands have integration tests",
+    "Chart outputs are snapshot-tested",
+    "Tests pass on Linux, macOS, Windows"
+]
+
+[phases.phase7.milestones.m7_2]
+name = "Documentation & Examples"
+duration_days = 3
+description = "Complete user documentation with real-world examples"
+deliverables = [
+    "README with quickstart guide",
+    "docs/api.md - Complete CLI reference",
+    "docs/examples.md - Real-world scenarios",
+    "docs/architecture.md - System design",
+    "Installation and deployment guides"
+]
+acceptance_criteria = [
+    "New users can get started in < 5 minutes",
+    "All CLI options are documented",
+    "Examples cover common GA4 use cases",
+    "Architecture is clear for contributors"
+]
+
+# =============================================================================
+# PHASE 8: RELEASE PREPARATION
+# =============================================================================
+
+[phases.phase8]
+name = "Release Preparation"
+duration_weeks = 1
+description = "Final polish, packaging, and release preparation"
+
+[phases.phase8.milestones]
+
+[phases.phase8.milestones.m8_1]
+name = "Packaging & Distribution"
+duration_days = 3
+description = "Release packaging and distribution setup"
+deliverables = [
+    "Cargo.toml metadata for crates.io",
+    "GitHub Actions for automated releases",
+    "Binary distribution for major platforms",
+    "Docker container for CI/CD usage",
+    "Installation scripts and documentation"
+]
+acceptance_criteria = [
+    "cargo install graff works correctly",
+    "Binaries work on Linux, macOS, Windows",
+    "Docker image runs in CI environments",
+    "Release automation is tested"
+]
+
+[phases.phase8.milestones.m8_2]
+name = "Final Testing & Bug Fixes"
+duration_days = 2
+description = "End-to-end testing and critical bug fixes"
+deliverables = [
+    "End-to-end testing with real GA4 data",
+    "Performance validation with large datasets",
+    "Bug fixes for critical issues",
+    "Final documentation review",
+    "Release notes and changelog"
+]
+acceptance_criteria = [
+    "All acceptance criteria from previous phases pass",
+    "Performance meets specified benchmarks",
+    "Critical bugs are resolved",
+    "Documentation is accurate and complete"
+]
+
+# =============================================================================
+# TESTING STRATEGY
+# =============================================================================
+
+[testing]
+approach = "Test-driven development with comprehensive coverage"
+
+[testing.unit_tests]
+description = "Test individual functions and modules"
+coverage_target = 90
+areas = [
+    "Data loading and schema detection",
+    "Transform pipeline functions",
+    "Derived column calculations",
+    "Error handling and validation",
+    "Color palette and theme logic"
+]
+
+[testing.integration_tests]
+description = "Test complete workflows end-to-end"
+areas = [
+    "CLI command execution with various arguments",
+    "Spec file parsing and validation",
+    "Chart rendering with fixture data",
+    "Batch processing workflows",
+    "Error message accuracy and helpfulness"
+]
+
+[testing.snapshot_tests]
+description = "Visual regression testing for chart outputs"
+tools = ["insta"]
+areas = [
+    "Chart output checksums for consistency",
+    "Metadata comparison (dimensions, colors)",
+    "Cross-platform rendering consistency",
+    "Theme and palette variations"
+]
+
+[testing.performance_tests]
+description = "Validate performance characteristics"
+benchmarks = [
+    "CSV loading speed vs file size",
+    "Memory usage with large datasets", 
+    "Chart rendering time vs complexity",
+    "Parallel processing efficiency"
+]
+
+[testing.fixtures]
+description = "Test data representing real GA4 scenarios"
+files = [
+    "ga4_users.csv - User data with channels and dates",
+    "ga4_events.csv - Event data with names and counts",
+    "sessions_by_device.csv - Session data by device category",
+    "hourly.csv - Hourly session data for heatmaps",
+    "funnel.csv - Conversion funnel data",
+    "retention.csv - Cohort retention data"
+]
+
+# =============================================================================
+# ACCEPTANCE CRITERIA
+# =============================================================================
+
+[acceptance_criteria]
+description = "Must-pass criteria for project completion"
+
+[acceptance_criteria.functional]
+requirements = [
+    "cargo run -- line --input tests/fixtures/ga4_users.csv --x date --y totalUsers --out /tmp/users.png produces valid PNG",
+    "graff render --spec tests/fixtures/charts.yaml --out /tmp/charts renders all charts successfully",
+    "Handles GA4 event_date in YYYYMMDD format without additional flags",
+    "Can render both stacked and grouped bar charts from same CSV",
+    "Heatmap supports discrete x/y and continuous z with legend",
+    "Funnel charts show conversion rates between steps",
+    "Retention matrix displays cohort data as percentages",
+    "Batch rendering processes charts in parallel",
+    "Large CSV files (>1GB) process without memory issues"
+]
+
+[acceptance_criteria.non_functional]
+requirements = [
+    "No network access required - pure local operation",
+    "Deterministic outputs - same input produces same image",
+    "Memory efficient - streaming for large datasets",
+    "Clear error messages with actionable suggestions",
+    "Comprehensive --help with examples for each command",
+    "Exit codes match documented behavior",
+    "Cross-platform compatibility (Linux, macOS, Windows)"
+]
+
+[acceptance_criteria.performance]
+benchmarks = [
+    "1M row CSV loads in < 10 seconds",
+    "Chart rendering completes in < 5 seconds",
+    "Memory usage < 1GB for 10M row datasets",
+    "Parallel rendering scales with CPU cores",
+    "File I/O is optimized for large datasets"
+]
+
+# =============================================================================
+# RISK MANAGEMENT
+# =============================================================================
+
+[risks]
+
+[risks.technical]
+high_risk = [
+    "Polars LazyFrame learning curve and performance optimization",
+    "Plotters rendering quality and customization limitations",
+    "Memory management with very large CSV files",
+    "Cross-platform compatibility issues"
+]
+mitigation = [
+    "Start with Polars early, build expertise incrementally",
+    "Prototype chart rendering early to validate approach",
+    "Implement streaming mode from the beginning",
+    "Test on multiple platforms throughout development"
+]
+
+[risks.scope]
+medium_risk = [
+    "Feature creep from additional chart types",
+    "Complex GA4 data format edge cases",
+    "Performance requirements for enterprise datasets",
+    "User experience expectations vs development time"
+]
+mitigation = [
+    "Strict adherence to defined chart types in v1.0",
+    "Focus on common GA4 patterns, document limitations",
+    "Set clear performance benchmarks and test regularly",
+    "Prioritize core functionality over polish initially"
+]
+
+[risks.timeline]
+low_risk = [
+    "Learning curve for new Rust crates",
+    "Testing infrastructure setup time",
+    "Documentation writing taking longer than expected"
+]
+mitigation = [
+    "Allocate extra time for crate familiarization",
+    "Set up CI/CD early in development",
+    "Write documentation incrementally during development"
+]
+
+# =============================================================================
+# SUCCESS METRICS
+# =============================================================================
+
+[success_metrics]
+description = "Quantifiable measures of project success"
+
+[success_metrics.functionality]
+targets = [
+    "All 6 chart types implemented and working",
+    "100% of defined CLI commands functional",
+    "Spec file format supports all planned features",
+    "GA4 date format auto-detection works correctly"
+]
+
+[success_metrics.performance]
+targets = [
+    "1M row CSV processing in < 10 seconds",
+    "Memory usage < 1GB for typical workloads",
+    "Chart rendering < 5 seconds per chart",
+    "Parallel processing shows linear speedup"
+]
+
+[success_metrics.quality]
+targets = [
+    "90%+ test coverage for core modules",
+    "Zero critical bugs in final release",
+    "All documentation complete and accurate",
+    "Cross-platform compatibility verified"
+]
+
+[success_metrics.usability]
+targets = [
+    "New user can create first chart in < 5 minutes",
+    "Error messages are actionable and helpful",
+    "CLI help system is comprehensive",
+    "Real-world GA4 use cases are covered"
+]
+
+# =============================================================================
+# FUTURE ROADMAP (POST-V1.0)
+# =============================================================================
+
+[future_roadmap]
+description = "Planned features for future releases"
+
+[future_roadmap.v1_1]
+features = [
+    "Interactive HTML output with zooming/panning",
+    "Additional aggregation functions (percentile, stddev)",
+    "Custom color palette import/export",
+    "Chart annotation and markup support"
+]
+
+[future_roadmap.v1_2]
+features = [
+    "Real-time data source connectors (BigQuery, GA4 API)",
+    "Chart templating system for reusable configurations",
+    "Advanced statistical overlays (trend lines, confidence intervals)",
+    "Multi-page PDF reports with multiple charts"
+]
+
+[future_roadmap.v2_0]
+features = [
+    "Web-based configuration UI",
+    "Scheduled report generation",
+    "Data source federation and joins",
+    "Machine learning insights and anomaly detection"
+]

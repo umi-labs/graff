@@ -1,0 +1,5 @@
+date,channel,source,medium,totalUsers,sessions,eventCount,deviceCategory
+2023-12-01,Organic Search,google,organic,1234,1456,8932,desktop
+2023-12-01,Direct,(direct),(none),987,1123,5621,mobile
+2023-12-01,Paid Search,google,cpc,456,523,2134,desktop
+2023-12-01,Social,facebook,social,234,267,1234,mobile

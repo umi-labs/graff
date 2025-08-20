@@ -1,0 +1,11 @@
+data:
+  default: tests/fixtures/ga4_users.csv
+
+charts:
+  - type: bar
+    title: "Users by Channel - Bar Chart Test"
+    x: channel
+    y: totalUsers
+    agg: sum
+    width: 1200
+    height: 600

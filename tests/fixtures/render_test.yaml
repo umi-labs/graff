@@ -1,0 +1,32 @@
+data:
+  default: tests/fixtures/ga4_users.csv
+
+charts:
+  # Test actual PNG rendering
+  - type: line
+    title: "Users by Day - Line Chart"
+    x: date
+    y: totalUsers
+    group_by: channel
+    width: 1200
+    height: 600
+    format: png
+
+  # Test actual bar chart rendering
+  - type: bar
+    title: "Users by Channel - Bar Chart"
+    x: channel
+    y: totalUsers
+    agg: sum
+    width: 1000
+    height: 500
+    format: png
+
+  # Test SVG rendering
+  - type: line
+    title: "Users Trend - SVG Format"
+    x: date
+    y: totalUsers
+    width: 800
+    height: 400
+    format: svg

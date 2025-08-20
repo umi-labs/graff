@@ -1,0 +1,9 @@
+data:
+  default: tests/fixtures/ga4_yyyymmdd.csv
+
+charts:
+  - type: line
+    title: "YYYYMMDD Date Format Test"
+    x: event_date
+    y: totalUsers
+    group_by: channel

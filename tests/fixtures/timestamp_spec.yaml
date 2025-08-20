@@ -1,0 +1,9 @@
+data:
+  default: tests/fixtures/mixed_timestamps.csv
+
+charts:
+  - type: line
+    title: "Timestamp Parsing Test"
+    x: timestamp
+    y: users
+    group_by: event_name

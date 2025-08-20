@@ -1,0 +1,52 @@
+data:
+  default: tests/fixtures/ga4_users.csv
+
+charts:
+  # Test 1: Basic line chart with ISO dates
+  - type: line
+    title: "Daily Users Trend"
+    x: date
+    y: totalUsers
+    group_by: channel
+    width: 1400
+    height: 800
+    theme: light
+
+  # Test 2: Bar chart with aggregation
+  - type: bar
+    title: "Users by Channel"
+    x: channel
+    y: totalUsers
+    agg: sum
+    width: 1200
+    height: 600
+
+  # Test 3: Heatmap with different data source
+  - type: heatmap
+    title: "Channel vs Device Heatmap"
+    data: tests/fixtures/ga4_channels.csv
+    x: deviceCategory
+    y: channel
+    z: sessions
+    bins: 10
+    colormap: viridis
+
+  # Test 4: YYYYMMDD date format
+  - type: line
+    title: "YYYYMMDD Format Test"
+    data: tests/fixtures/ga4_yyyymmdd.csv
+    x: event_date
+    y: totalUsers
+    group_by: channel
+    width: 1000
+    height: 500
+
+  # Test 5: Timestamp parsing
+  - type: line
+    title: "Timestamp Parsing Demo"
+    data: tests/fixtures/mixed_timestamps.csv
+    x: timestamp
+    y: users
+    group_by: event_name
+    width: 1200
+    height: 700

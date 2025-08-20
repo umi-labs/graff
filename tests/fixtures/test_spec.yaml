@@ -1,0 +1,30 @@
+data:
+  default: tests/fixtures/ga4_users.csv
+
+charts:
+  - type: line
+    title: "Users by Day"
+    x: date
+    y: totalUsers
+    group_by: channel
+    agg: sum
+    width: 1400
+    height: 800
+    theme: light
+
+  - type: bar
+    title: "Total Users by Channel"
+    x: channel
+    y: totalUsers
+    agg: sum
+    width: 1200
+    height: 600
+    
+  - type: heatmap
+    title: "Sample Heatmap"
+    data: tests/fixtures/ga4_channels.csv
+    x: deviceCategory
+    y: channel
+    z: sessions
+    bins: 10
+    colormap: viridis

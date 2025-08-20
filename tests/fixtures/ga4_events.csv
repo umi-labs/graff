@@ -1,0 +1,9 @@
+date,eventName,eventCount
+2023-12-01,page_view,15420
+2023-12-01,add_to_cart,2341
+2023-12-01,begin_checkout,1234
+2023-12-01,purchase,456
+2023-12-02,page_view,16234
+2023-12-02,add_to_cart,2456
+2023-12-02,begin_checkout,1345
+2023-12-02,purchase,523

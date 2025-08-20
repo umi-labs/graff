@@ -1,0 +1,9 @@
+data:
+  default: tests/fixtures/ga4_users.csv
+
+charts:
+  - type: line
+    title: "Invalid Column Names"
+    x: Date  # Should suggest 'date' 
+    y: Users  # Should suggest 'totalUsers'
+    group_by: Channel  # Should suggest 'channel'

@@ -1,0 +1,15 @@
+data:
+  default: tests/fixtures/ga4_users.csv
+
+charts:
+  - type: heatmap
+    title: "Invalid Heatmap - Missing z field"
+    x: date
+    y: totalUsers
+    # Missing z field - should cause validation error
+    
+  - type: funnel
+    title: "Invalid Funnel - Missing steps"
+    x: date
+    y: totalUsers
+    # Missing steps and values fields
